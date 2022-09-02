@@ -557,6 +557,26 @@ class StripeSdkModule(reactContext: ReactApplicationContext) : ReactContextBaseJ
   }
 
   @ReactMethod
+  fun createPaymentMethodWithCardData(data: ReadableMap, cardData: ReadableMap, options: ReadableMap, promise: Promise) {
+    val billingDetailsParams = mapToBillingDetails(getMapOrNull(data, "billingDetails"))
+    val cardParams = mapToPaymentMethodCreateParamsCard(cardData)
+            ?: throw PaymentMethodCreateParamsException("Card details not complete")
+    val paymentMethodCreateParams = PaymentMethodCreateParams.create(cardParams, billingDetailsParams)
+    stripe.createPaymentMethod(
+            paymentMethodCreateParams,
+            callback = object : ApiResultCallback<PaymentMethod> {
+              override fun onError(e: Exception) {
+                promise.reject("Failed", e.localizedMessage)
+              }
+
+              override fun onSuccess(result: PaymentMethod) {
+                val paymentMethodMap: WritableMap = mapFromPaymentMethod(result)
+                promise.resolve(paymentMethodMap)
+              }
+            })
+  }
+
+  @ReactMethod
   fun initGooglePay(params: ReadableMap, promise: Promise) {
     val activity = currentActivity.activity
     val fragment = GooglePayFragment().also {

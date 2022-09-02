@@ -44,8 +44,7 @@ abstract class StripePlatform extends PlatformInterface {
   ]);
 
   Future<PaymentIntent> handleCardAction(String paymentIntentClientSecret);
-  Future<PaymentIntent> confirmPayment(
-      String paymentIntentClientSecret, PaymentMethodParams params,
+  Future<PaymentIntent> confirmPayment(String paymentIntentClientSecret, PaymentMethodParams params,
       [Map<String, String> options = const {}]);
   Future<bool> isApplePaySupported() async => false;
 
@@ -62,17 +61,21 @@ abstract class StripePlatform extends PlatformInterface {
   Future<void> confirmApplePayPayment(String clientSecret);
   Future<TokenData> createApplePayToken(Map<String, dynamic> payment);
 
+  Future<PaymentMethod> createPaymentMethodWithCardData(
+    PaymentMethodParams data,
+    Map<String, dynamic> cardData, [
+    Map<String, String> options = const {},
+  ]);
+
   Future<void> initGooglePay(GooglePayInitParams params);
   Future<void> presentGooglePay(PresentGooglePayParams params);
-  Future<PaymentMethod> createGooglePayPaymentMethod(
-      CreateGooglePayPaymentParams params);
+  Future<PaymentMethod> createGooglePayPaymentMethod(CreateGooglePayPaymentParams params);
 
   /// Creates a token for card details.
   ///
   /// Note this method is legacy and it is advised to use [PaymentIntent].
   Future<TokenData> createToken(CreateTokenParams params);
-  Future<SetupIntent> confirmSetupIntent(
-      String setupIntentClientSecret, PaymentMethodParams data,
+  Future<SetupIntent> confirmSetupIntent(String setupIntentClientSecret, PaymentMethodParams data,
       [Map<String, String> options = const {}]);
   Future<PaymentIntent> retrievePaymentIntent(String clientSecret);
   Future<String> createTokenForCVCUpdate(String cvc);

@@ -77,6 +77,12 @@ class StripeAndroidPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                     options = call.requiredArgument("options"),
                     promise = Promise(result)
             )
+            "createPaymentMethodWithCardData" -> stripeSdk.createPaymentMethodWithCardData(
+                    data = call.requiredArgument("data"),
+                    cardData = call.requiredArgument("cardData"),
+                    options = call.requiredArgument("options"),
+                    promise = Promise(result)
+            )
             "createTokenForCVCUpdate" -> stripeSdk.createTokenForCVCUpdate(
                     cvc = call.requiredArgument("cvc"),
                     promise = Promise(result)

@@ -27,8 +27,7 @@ class Stripe {
 
   /// Retrieves the publishable API key.
   static String get publishableKey {
-    assert(instance._publishableKey != null,
-        'A publishableKey is required and missing');
+    assert(instance._publishableKey != null, 'A publishableKey is required and missing');
     return instance._publishableKey!;
   }
 
@@ -45,8 +44,7 @@ class Stripe {
   }
 
   /// Retrieves the configuration parameters for 3D secure.
-  static ThreeDSecureConfigurationParams? get threeDSecureParams =>
-      instance._threeDSecureParams;
+  static ThreeDSecureConfigurationParams? get threeDSecureParams => instance._threeDSecureParams;
 
   /// Sets the configuration parameters for 3D secure.
   static set threeDSecureParams(ThreeDSecureConfigurationParams? value) {
@@ -118,9 +116,9 @@ class Stripe {
   }
 
   /// Creates a single-use token that represents an Apple Pay credit card’s details.
-  /// 
-  /// The [payment] param should be the data response from the `pay` plugin. It can 
-  /// be used both with the callback `onPaymentResult` from `pay.ApplePayButton` or 
+  ///
+  /// The [payment] param should be the data response from the `pay` plugin. It can
+  /// be used both with the callback `onPaymentResult` from `pay.ApplePayButton` or
   /// directly with `Pay.showPaymentSelector`
   ///
   /// Throws an [StripeError] in case createApplePayToken fails.
@@ -148,6 +146,25 @@ class Stripe {
     await _awaitForSettings();
     try {
       final paymentMethod = await _platform.createPaymentMethod(data, options);
+      return paymentMethod;
+    } on StripeError catch (error) {
+      throw StripeError(message: error.message, code: error.message);
+    }
+  }
+
+  // Marco created for android, eventually this should be remove
+  Future<PaymentMethod> createPaymentMethodWithCardData(
+    PaymentMethodParams data, {
+    required Map<String, dynamic> cardData,
+    Map<String, String> options = const {},
+  }) async {
+    await _awaitForSettings();
+    try {
+      final paymentMethod = await _platform.createPaymentMethodWithCardData(
+        data,
+        cardData,
+        options,
+      );
       return paymentMethod;
     } on StripeError catch (error) {
       throw StripeError(message: error.message, code: error.message);
@@ -235,8 +252,7 @@ class Stripe {
   ]) async {
     await _awaitForSettings();
     try {
-      final paymentMethod = await _platform.confirmPayment(
-          paymentIntentClientSecret, data, options);
+      final paymentMethod = await _platform.confirmPayment(paymentIntentClientSecret, data, options);
       return paymentMethod;
     } on StripeError {
       rethrow;
@@ -253,8 +269,7 @@ class Stripe {
   ) async {
     await _awaitForSettings();
     try {
-      final paymentIntent =
-          await _platform.handleCardAction(paymentIntentClientSecret);
+      final paymentIntent = await _platform.handleCardAction(paymentIntentClientSecret);
       return paymentIntent;
     } on StripeError {
       //throw StripeError<CardActionError>(error.code, error.message);
@@ -275,8 +290,7 @@ class Stripe {
   ]) async {
     await _awaitForSettings();
     try {
-      final setupIntent = await _platform.confirmSetupIntent(
-          paymentIntentClientSecret, params, options);
+      final setupIntent = await _platform.confirmSetupIntent(paymentIntentClientSecret, params, options);
       return setupIntent;
     } on StripeException {
       rethrow;
@@ -359,8 +373,7 @@ class Stripe {
   /// Create a payment method for google pay.
   ///
   /// Throws a [StripeException] in case it is failing
-  Future<PaymentMethod> createGooglePayPaymentMethod(
-      CreateGooglePayPaymentParams params) async {
+  Future<PaymentMethod> createGooglePayPaymentMethod(CreateGooglePayPaymentParams params) async {
     return await _platform.createGooglePayPaymentMethod(params);
   }
 

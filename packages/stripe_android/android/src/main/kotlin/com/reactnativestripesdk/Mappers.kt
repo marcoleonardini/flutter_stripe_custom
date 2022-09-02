@@ -465,6 +465,18 @@ internal fun mapToShippingDetails(shippingDetails: ReadableMap?): ConfirmPayment
   )
 }
 
+internal fun mapToPaymentMethodCreateParamsCard(cardData: ReadableMap?): PaymentMethodCreateParams.Card? {
+  if (cardData == null) {
+    return null
+  }
+  return PaymentMethodCreateParams.Card.Builder()
+          .setNumber(getValOr(cardData, "cardNumber"))
+          .setExpiryMonth(getIntOrNull(cardData, "expiryMonth"))
+          .setExpiryYear(getIntOrNull(cardData, "expiryYear"))
+          .setCvc(getValOr(cardData, "cvv"))
+          .build()
+}
+
 private fun getStringOrNull(map: ReadableMap?, key: String): String? {
   return if (map?.hasKey(key) == true) map.getString(key) else null
 }
