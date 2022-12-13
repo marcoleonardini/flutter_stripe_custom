@@ -1,6 +1,5 @@
 package com.reactnativestripesdk
 import com.facebook.react.bridge.Arguments
-import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.events.Event
 import com.facebook.react.uimanager.events.RCTEventEmitter
@@ -11,7 +10,7 @@ internal class FormCompleteEvent constructor(viewTag: Int, private val formDetai
   }
 
   override fun dispatch(rctEventEmitter: RCTEventEmitter) {
-    rctEventEmitter.receiveEvent(viewTag, getEventName(), serializeEventData())
+    rctEventEmitter.receiveEvent(viewTag, eventName, serializeEventData())
   }
 
   private fun serializeEventData(): WritableMap {

@@ -1,6 +1,9 @@
+// ignore_for_file: constant_identifier_names
+
 import 'package:flutter/painting.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:json_annotation/json_annotation.dart';
+
+import 'color.dart';
 
 part 'card_field_input.freezed.dart';
 part 'card_field_input.g.dart';
@@ -71,6 +74,67 @@ class CardStyle with _$CardStyle {
 
 @freezed
 
+/// Styiling information for the cardfield.
+class CardFormStyle with _$CardFormStyle {
+  @JsonSerializable(explicitToJson: true)
+  factory CardFormStyle({
+    @JsonKey(toJson: ColorKey.toJson, fromJson: ColorKey.fromJson)
+
+        /// Background color of the cardformfield
+        ///
+        /// Make sure that there is enough contrast with the text color.
+        Color? backgroundColor,
+
+    /// Width for the border.
+    double? borderWidth,
+    @JsonKey(toJson: ColorKey.toJson, fromJson: ColorKey.fromJson)
+
+        /// Border color of the cardfield.
+        Color? borderColor,
+
+    /// Borderradius that can give the Cardfield rounded corners.
+    double? borderRadius,
+    @JsonKey(toJson: ColorKey.toJson, fromJson: ColorKey.fromJson)
+
+        /// Cursor color when the card has focus.
+        Color? cursorColor,
+    @JsonKey(toJson: ColorKey.toJson, fromJson: ColorKey.fromJson)
+
+        /// Color of the typed text on the Card fuekd.
+        Color? textColor,
+
+    /// Font size.
+    double? fontSize,
+
+    /// Color of the input in case incorrect data is entered.
+    @JsonKey(toJson: ColorKey.toJson, fromJson: ColorKey.fromJson)
+        Color? textErrorColor,
+    @JsonKey(toJson: ColorKey.toJson, fromJson: ColorKey.fromJson)
+
+        /// Color of the placeholder text.
+        Color? placeholderColor,
+  }) = _CardFormStyleConstructor;
+
+  factory CardFormStyle.fromJson(Map<String, dynamic> json) =>
+      _$CardFormStyleFromJson(json);
+
+  CardFormStyle._();
+
+  CardFormStyle apply(CardFormStyle? style) => copyWith(
+        backgroundColor: style?.backgroundColor ?? backgroundColor,
+        borderWidth: style?.borderWidth ?? borderWidth,
+        borderColor: style?.borderColor ?? borderColor,
+        borderRadius: style?.borderRadius ?? borderRadius,
+        cursorColor: style?.cursorColor ?? cursorColor,
+        textColor: style?.textColor ?? textColor,
+        fontSize: style?.fontSize ?? fontSize,
+        textErrorColor: style?.textErrorColor ?? textErrorColor,
+        placeholderColor: style?.placeholderColor ?? placeholderColor,
+      );
+}
+
+@freezed
+
 /// Localized text for the placeholders of the card fields.
 class CardPlaceholder with _$CardPlaceholder {
   @JsonSerializable(explicitToJson: true)
@@ -102,24 +166,6 @@ class CardPlaceholder with _$CardPlaceholder {
         cvc: placeholder?.cvc ?? cvc,
         postalCode: placeholder?.postalCode ?? postalCode,
       );
-}
-
-/// Deserialization object for colors.
-///
-/// This object is used to translate Flutter color objects to hex strings used by the stripe sdk.
-class ColorKey {
-  const ColorKey();
-
-  static String? toJson(Color? color) {
-    if (color != null) {
-      // ignore: lines_longer_than_80_chars
-      return '#${color.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
-    }
-  }
-
-  static Color? fromJson(value) {
-    throw UnimplementedError();
-  }
 }
 
 @freezed
@@ -155,6 +201,15 @@ class CardFieldInputDetails with _$CardFieldInputDetails {
     /// CVC code.
     /// This information is not available by default to comply with the PCI compliance
     String? cvc,
+
+    /// The [CardValidationState] of the entered expiry date.
+    @Default(CardValidationState.Unknown) CardValidationState validExpiryDate,
+
+    /// The [CardValidationState] of the entered cvc.
+    @Default(CardValidationState.Unknown) CardValidationState validCVC,
+
+    /// The [CardValidationState] of the entered card number.
+    @Default(CardValidationState.Unknown) CardValidationState validNumber,
   }) = _CardFieldInputDetails;
 
   factory CardFieldInputDetails.fromJson(Map<String, dynamic> json) =>
@@ -190,4 +245,11 @@ enum CardFieldName {
 
   /// Postal code field.
   postalCode,
+}
+
+enum CardValidationState {
+  Unknown,
+  Valid,
+  Invalid,
+  Incomplete,
 }

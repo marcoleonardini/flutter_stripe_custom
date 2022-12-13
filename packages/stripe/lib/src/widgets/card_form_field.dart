@@ -7,17 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
-import 'package:stripe_platform_interface/stripe_platform_interface.dart';
 
-const String _kDebugPCIMessage =
-    'Handling card data manually will break PCI compliance provided by Stripe. '
-    'Please make sure you understand the severe consecuences of it. '
-    'https://stripe.com/docs/security/guide#validating-pci-compliance. \n'
-    'To handle PCI compliance yourself and allow to edit card data programatically,'
-    'set `dangerouslyGetFullCardDetails: true`';
+import '../utils.dart';
 
 /// Customizable form that collects card information.
-/// 
+///
 /// Notice implementation differs for iOS and Android platforms:
 /// ![Sripe Card Form]
 /// (https://github.com/flutter-stripe/flutter_stripe/tree/main/docs/assets/card_form.png)
@@ -26,22 +20,13 @@ class CardFormField extends StatefulWidget {
       {this.onCardChanged,
       Key? key,
       this.onFocus,
-      this.decoration,
       this.enablePostalCode = true,
       this.style,
       this.autofocus = false,
       this.dangerouslyGetFullCardDetails = false,
       this.dangerouslyUpdateFullCardDetails = false,
-      this.cursorColor,
-      this.numberHintText,
-      this.expirationHintText,
-      this.cvcHintText,
-      this.postalCodeHintText,
       this.controller})
       : super(key: key);
-
-  /// Decoration related to the input fields.
-  final InputDecoration? decoration;
 
   /// Callback that will be executed when a specific field gets focus.
   final CardFocusCallback? onFocus;
@@ -49,27 +34,17 @@ class CardFormField extends StatefulWidget {
   /// Callback that will be executed when the card information changes.
   final CardChangedCallback? onCardChanged;
 
-  /// Textstyle of the card input fields.
-  final TextStyle? style;
-
-  /// Color of the cursor when a field gets focus.
-  final Color? cursorColor;
+  /// Styling parameters of the card form field
+  ///
+  /// Note that currently styling only works on Android. For iOS you can only set
+  /// the background color.
+  final CardFormStyle? style;
 
   /// Whether or not to show the postalcode field in the form.
-  /// Defaults is `false`.
+  /// Defaults is `true`. If your configuration in Stripe requires a postalcode
+  /// check as defined in https://stripe.com/docs/radar/rules#traditional-bank-checks
+  /// make sure this one is set to `true`.
   final bool enablePostalCode;
-
-  /// Hint text for the card number field.
-  final String? numberHintText;
-
-  /// Hint text for the expiration date field.
-  final String? expirationHintText;
-
-  /// Hint text for the cvc field.
-  final String? cvcHintText;
-
-  /// Hint text for the postal code field.
-  final String? postalCodeHintText;
 
   /// Defines whether or not to automatically focus on the cardfield/
   /// Default is `false`.
@@ -97,6 +72,7 @@ class CardFormField extends StatefulWidget {
   final bool dangerouslyUpdateFullCardDetails;
 
   @override
+  // ignore: library_private_types_in_public_api
   _CardFormFieldState createState() => _CardFormFieldState();
 }
 
@@ -160,11 +136,11 @@ class _CardFormFieldState extends State<CardFormField> {
   final FocusNode _node =
       FocusNode(debugLabel: 'CardFormField', descendantsAreFocusable: false);
 
-  CardFormEditController? _fallbackContoller;
+  CardFormEditController? _fallbackController;
   CardFormEditController get controller {
     if (widget.controller != null) return widget.controller!;
-    _fallbackContoller ??= CardFormEditController();
-    return _fallbackContoller!;
+    _fallbackController ??= CardFormEditController();
+    return _fallbackController!;
   }
 
   @override
@@ -179,7 +155,7 @@ class _CardFormFieldState extends State<CardFormField> {
       ..removeListener(updateState)
       ..dispose();
 
-    _fallbackContoller?.dispose();
+    _fallbackController?.dispose();
     super.dispose();
   }
 
@@ -189,53 +165,23 @@ class _CardFormFieldState extends State<CardFormField> {
 
   @override
   Widget build(BuildContext context) {
-    final inputDecoration = effectiveDecoration(widget.decoration);
-    final style = effectiveCardStyle(inputDecoration);
+    final style = effectiveCardStyle();
 
-    return  _MethodChannelCardFormField(
-        focusNode: _node,
-        controller: controller,
-        style: style,
-        placeholder: CardPlaceholder(
-          number: widget.numberHintText,
-          expiration: widget.expirationHintText,
-          cvc: widget.cvcHintText,
-          postalCode: widget.postalCodeHintText,
-        ),
-        dangerouslyGetFullCardDetails: widget.dangerouslyGetFullCardDetails,
-        dangerouslyUpdateFullCardDetails:
-            widget.dangerouslyUpdateFullCardDetails,
-        enablePostalCode: widget.enablePostalCode,
-        onCardChanged: widget.onCardChanged,
-        autofocus: widget.autofocus,
-        onFocus: widget.onFocus,
-      
+    return _MethodChannelCardFormField(
+      focusNode: _node,
+      controller: controller,
+      style: style,
+      dangerouslyGetFullCardDetails: widget.dangerouslyGetFullCardDetails,
+      dangerouslyUpdateFullCardDetails: widget.dangerouslyUpdateFullCardDetails,
+      enablePostalCode: widget.enablePostalCode,
+      onCardChanged: widget.onCardChanged,
+      autofocus: widget.autofocus,
+      onFocus: widget.onFocus,
     );
   }
 
-  InputDecoration effectiveDecoration(InputDecoration? decoration) {
-    final theme = Theme.of(context).inputDecorationTheme;
-    final cardDecoration = decoration ?? const InputDecoration();
-    return cardDecoration.applyDefaults(theme);
-  }
-
-  CardStyle effectiveCardStyle(InputDecoration decoration) {
-    final fontSize = widget.style?.fontSize ??
-        Theme.of(context).textTheme.subtitle1?.fontSize ??
-        kCardFormFieldDefaultFontSize;
-
-    final fontFamily = widget.style?.fontFamily ??
-        Theme.of(context).textTheme.subtitle1?.fontFamily ??
-        kCardFormFieldDefaultFontFamily;
-
-    return CardStyle(
-      textColor: widget.style?.color,
-      fontSize: fontSize,
-      fontFamily: fontFamily,
-      cursorColor: widget.cursorColor,
-      textErrorColor: decoration.errorStyle?.color,
-      placeholderColor: decoration.hintStyle?.color,
-    );
+  CardFormStyle? effectiveCardStyle() {
+    return widget.style;
   }
 }
 
@@ -246,7 +192,6 @@ class _MethodChannelCardFormField extends StatefulWidget {
     Key? key,
     this.onFocus,
     this.style,
-    this.placeholder,
     this.enablePostalCode = false,
     double? width,
     double? height,
@@ -265,8 +210,7 @@ class _MethodChannelCardFormField extends StatefulWidget {
   final BoxConstraints? constraints;
   final CardFocusCallback? onFocus;
   final CardChangedCallback? onCardChanged;
-  final CardStyle? style;
-  final CardPlaceholder? placeholder;
+  final CardFormStyle? style;
   final bool enablePostalCode;
   final FocusNode? focusNode;
   final bool autofocus;
@@ -281,7 +225,7 @@ class _MethodChannelCardFormField extends StatefulWidget {
   // time.
   // A unique key is used to throw an expection before multiple platform
   // views are created
-  static late final _key = UniqueKey();
+  static final _key = UniqueKey();
 
   @override
   _MethodChannelCardFormFieldState createState() =>
@@ -296,35 +240,13 @@ class _MethodChannelCardFormFieldState
       FocusNode(debugLabel: 'CardFormField', descendantsAreFocusable: false);
   FocusNode get _effectiveNode => widget.focusNode ?? _focusNode;
 
-  CardStyle? _lastStyle;
-  CardStyle resolveStyle(CardStyle? style) {
-    final theme = Theme.of(context);
-    final baseTextStyle = Theme.of(context).textTheme.subtitle1;
-    return CardStyle(
-      borderWidth: 0,
+  CardFormStyle? _lastStyle;
+
+  CardFormStyle resolveStyle(CardFormStyle? style) {
+    return CardFormStyle(
       backgroundColor: Colors.transparent,
-      borderColor: Colors.transparent,
-      borderRadius: 0,
-      cursorColor: theme.textSelectionTheme.cursorColor ?? theme.primaryColor,
-      textColor: style?.textColor ??
-          baseTextStyle?.color ??
-          kCardFormFieldDefaultTextColor,
-      fontSize: baseTextStyle?.fontSize ?? kCardFormFieldDefaultFontSize,
-      fontFamily: baseTextStyle?.fontFamily ?? kCardFormFieldDefaultFontFamily,
-      textErrorColor:
-          theme.inputDecorationTheme.errorStyle?.color ?? theme.errorColor,
-      placeholderColor:
-          theme.inputDecorationTheme.hintStyle?.color ?? theme.hintColor,
     ).apply(style);
   }
-
-  CardPlaceholder? _lastPlaceholder;
-  CardPlaceholder resolvePlaceholder(CardPlaceholder? placeholder) =>
-      CardPlaceholder(
-        number: '1234123412341234',
-        expiration: 'MM/YY',
-        cvc: 'CVC',
-      ).apply(placeholder);
 
   CardFormEditController get controller => widget.controller;
 
@@ -336,9 +258,9 @@ class _MethodChannelCardFormFieldState
       if (kDebugMode &&
           controller.details != const CardFieldInputDetails(complete: false)) {
         dev.log('WARNING! Initial card data value has been ignored. \n'
-            '$_kDebugPCIMessage');
+            '$kDebugPCIMessage');
       }
-      WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+      ambiguate(WidgetsBinding.instance)?.addPostFrameCallback((timeStamp) {
         controller._updateDetails(const CardFieldInputDetails(complete: false));
       });
     }
@@ -358,11 +280,9 @@ class _MethodChannelCardFormFieldState
   @override
   Widget build(BuildContext context) {
     final style = resolveStyle(widget.style);
-    final placeholder = resolvePlaceholder(widget.placeholder);
     // Pass parameters to the platform side.
     final creationParams = <String, dynamic>{
       'cardStyle': style.toJson(),
-      'placeholder': placeholder.toJson(),
       'postalCodeEnabled': widget.enablePostalCode,
       'dangerouslyGetFullCardDetails': widget.dangerouslyGetFullCardDetails,
       if (widget.dangerouslyUpdateFullCardDetails &&
@@ -380,11 +300,24 @@ class _MethodChannelCardFormFieldState
         onPlatformViewCreated: onPlatformViewCreated,
       );
     } else if (defaultTargetPlatform == TargetPlatform.iOS) {
-      platform = _UiKitCardFormField(
-        key: _MethodChannelCardFormField._key,
-        viewType: _MethodChannelCardFormField._viewType,
-        creationParams: creationParams,
-        onPlatformViewCreated: onPlatformViewCreated,
+      platform = Listener(
+        onPointerDown: (_) {
+          if (!_effectiveNode.hasFocus) {
+            _effectiveNode.requestFocus();
+          }
+        },
+        child: Focus(
+          autofocus: widget.autofocus,
+          descendantsAreFocusable: true,
+          focusNode: _effectiveNode,
+          onFocusChange: _handleFrameworkFocusChanged,
+          child: _UiKitCardFormField(
+            key: _MethodChannelCardFormField._key,
+            viewType: _MethodChannelCardFormField._viewType,
+            creationParams: creationParams,
+            onPlatformViewCreated: onPlatformViewCreated,
+          ),
+        ),
       );
     } else {
       throw UnsupportedError('Unsupported platform view');
@@ -395,22 +328,9 @@ class _MethodChannelCardFormFieldState
                 ? kCardFormFieldDefaultIOSHeight
                 : kCardFormFieldDefaultAndroidHeight);
 
-    return Listener(
-      onPointerDown: (_) {
-        if (!_effectiveNode.hasFocus) {
-          _effectiveNode.requestFocus();
-        }
-      },
-      child: Focus(
-        autofocus: true,
-        descendantsAreFocusable: false,
-        focusNode: _effectiveNode,
-        onFocusChange: _handleFrameworkFocusChanged,
-        child: ConstrainedBox(
-          constraints: constraints,
-          child: platform,
-        ),
-      ),
+    return ConstrainedBox(
+      constraints: constraints,
+      child: platform,
     );
   }
 
@@ -454,13 +374,6 @@ class _MethodChannelCardFormFieldState
       });
     }
     _lastStyle = style;
-    final placeholder = resolvePlaceholder(widget.placeholder);
-    if (placeholder != _lastPlaceholder) {
-      _methodChannel?.invokeMethod('onPlaceholderChanged', {
-        'placeholder': placeholder.toJson(),
-      });
-    }
-    _lastPlaceholder = placeholder;
     super.didUpdateWidget(oldWidget);
   }
 
@@ -501,7 +414,7 @@ class _MethodChannelCardFormFieldState
       final map = Map<String, dynamic>.from(arguments);
       final field = CardFieldFocusName.fromJson(map);
       if (field.focusedField != null &&
-          WidgetsBinding.instance!.focusManager.primaryFocus !=
+          ambiguate(WidgetsBinding.instance)?.focusManager.primaryFocus !=
               _effectiveNode) {
         _effectiveNode.requestFocus();
       }
@@ -546,7 +459,7 @@ class _MethodChannelCardFormFieldState
 
   @override
   void dangerouslyUpdateCardDetails(CardFieldInputDetails details) {
-    assert(widget.dangerouslyUpdateFullCardDetails, _kDebugPCIMessage);
+    assert(widget.dangerouslyUpdateFullCardDetails, kDebugPCIMessage);
     _methodChannel?.invokeMethod('dangerouslyUpdateCardDetails', {
       'cardDetails': details.toJson(),
     });
@@ -584,6 +497,9 @@ class _AndroidCardFormField extends StatelessWidget {
           layoutDirection: Directionality.of(context),
           creationParams: creationParams,
           creationParamsCodec: const StandardMessageCodec(),
+          onFocus: () {
+            params.onFocusChanged(true);
+          },
         )
           ..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
           ..create();

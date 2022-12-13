@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:stripe_platform_interface/src/models/ach_params.dart';
 import 'package:stripe_platform_interface/src/models/create_token_data.dart';
 import 'package:stripe_platform_interface/src/models/google_pay.dart';
 import 'package:stripe_platform_interface/src/result_parser.dart';
@@ -24,11 +25,14 @@ class MethodChannelStripe extends StripePlatform {
   MethodChannelStripe({
     required MethodChannel methodChannel,
     required bool platformIsIos,
+    required bool platformIsAndroid,
   })  : _methodChannel = methodChannel,
+        _platformIsAndroid = platformIsAndroid,
         _platformIsIos = platformIsIos;
 
   final MethodChannel _methodChannel;
   final bool _platformIsIos;
+  final bool _platformIsAndroid;
 
   @override
   Future<void> initialise({
@@ -37,6 +41,7 @@ class MethodChannelStripe extends StripePlatform {
     ThreeDSecureConfigurationParams? threeDSecureParams,
     String? merchantIdentifier,
     String? urlScheme,
+    bool? setReturnUrlSchemeOnAndroid,
   }) async {
     await _methodChannel.invokeMethod('initialise', {
       'publishableKey': publishableKey,
@@ -45,7 +50,24 @@ class MethodChannelStripe extends StripePlatform {
       'appInfo': _appInfo.toJson(),
       'threeDSecureParams': threeDSecureParams,
       'urlScheme': urlScheme,
+      'setReturnUrlSchemeOnAndroid': setReturnUrlSchemeOnAndroid,
     });
+  }
+
+  @override
+  Future<PaymentMethod> createPaymentMethodWithCardData(
+    PaymentMethodParams data,
+    Map<String, dynamic> cardData, [
+    Map<String, String> options = const {},
+  ]) async {
+    final result = await _methodChannel.invokeMapMethod<String, dynamic>('createPaymentMethodWithCardData', {
+      'data': data.toJson(),
+      'cardData': cardData,
+      'options': options,
+    });
+    return PaymentMethod.fromJson(
+      result.unfoldToNonNull(),
+    );
   }
 
   @override
@@ -67,22 +89,6 @@ class MethodChannelStripe extends StripePlatform {
     await _methodChannel.invokeMethod('confirmApplePayPayment', {
       'clientSecret': clientSecret,
     });
-  }
-
-  @override
-  Future<PaymentMethod> createPaymentMethodWithCardData(
-    PaymentMethodParams data,
-    Map<String, dynamic> cardData, [
-    Map<String, String> options = const {},
-  ]) async {
-    final result = await _methodChannel.invokeMapMethod<String, dynamic>('createPaymentMethodWithCardData', {
-      'data': data.toJson(),
-      'cardData': cardData,
-      'options': options,
-    });
-    return PaymentMethod.fromJson(
-      result.unfoldToNonNull(),
-    );
   }
 
   @override
@@ -129,8 +135,8 @@ class MethodChannelStripe extends StripePlatform {
   }
 
   @override
-  Future<PaymentIntent> handleCardAction(String paymentIntentClientSecret) async {
-    final result = await _methodChannel.invokeMapMethod<String, dynamic>('handleCardAction', {
+  Future<PaymentIntent> handleNextAction(String paymentIntentClientSecret) async {
+    final result = await _methodChannel.invokeMapMethod<String, dynamic>('handleNextAction', {
       'paymentIntentClientSecret': paymentIntentClientSecret,
     });
 
@@ -148,11 +154,33 @@ class MethodChannelStripe extends StripePlatform {
   }
 
   @override
+  Future<void> openApplePaySetup() async {
+    if (!_platformIsIos) {
+      throw UnsupportedError('Apple Pay is only available for iOS devices');
+    }
+    await _methodChannel.invokeMethod('openApplePaySetup');
+  }
+
+  @override
   Future<void> presentApplePay(ApplePayPresentParams params) async {
     if (!_platformIsIos) {
       throw UnsupportedError('Apple Pay is only available for iOS devices');
     }
     await _methodChannel.invokeMethod('presentApplePay', params.toJson());
+  }
+
+  @override
+  Future<void> updateApplePaySummaryItems({
+    required List<ApplePayCartSummaryItem> summaryItems,
+    List<ApplePayErrorAddressField>? errorAddressFields,
+  }) async {
+    if (!_platformIsIos) {
+      throw UnsupportedError('Apple Pay is only available for iOS devices');
+    }
+    await _methodChannel.invokeMapMethod<String, dynamic>('updateApplePaySummaryItems', {
+      'summaryItems': summaryItems.map((e) => e.toJson()).toList(),
+      'errorAddressFields': errorAddressFields?.map((e) => e.toJson()).toList(),
+    });
   }
 
   @override
@@ -202,7 +230,13 @@ class MethodChannelStripe extends StripePlatform {
 
   @override
   Future<TokenData> createToken(CreateTokenParams params) async {
-    final result = await _methodChannel.invokeMapMethod<String, dynamic>('createToken', {'params': params.toJson()});
+    final invokeParams = params.map(
+      (value) => value.toJson(),
+      card: (data) => data.toJson()['params'],
+      bankAccount: (data) => data.toJson()['params'],
+    );
+
+    final result = await _methodChannel.invokeMapMethod<String, dynamic>('createToken', {'params': invokeParams});
 
     return ResultParser<TokenData>(parseJson: (json) => TokenData.fromJson(json))
         .parse(result: result!, successResultKey: 'token');
@@ -265,11 +299,53 @@ class MethodChannelStripe extends StripePlatform {
   }
 
   @override
+  Future<bool> googlePayIsSupported(IsGooglePaySupportedParams params) async {
+    if (!_platformIsAndroid) {
+      return false;
+    }
+    final isSupported = await _methodChannel.invokeMethod('isGooglePaySupported', {'params': params.toJson()});
+
+    return isSupported ?? false;
+  }
+
+  @override
   Future<TokenData> createApplePayToken(Map<String, dynamic> payment) async {
     final result = await _methodChannel.invokeMapMethod<String, dynamic>('createApplePayToken', {'payment': payment});
 
     return ResultParser<TokenData>(parseJson: (json) => TokenData.fromJson(json))
         .parse(result: result!, successResultKey: 'token');
+  }
+
+  @override
+  Future<PaymentIntent> collectBankAccount({
+    required bool isPaymentIntent,
+    required String clientSecret,
+    required CollectBankAccountParams params,
+  }) async {
+    final result = await _methodChannel.invokeMapMethod<String, dynamic>('collectBankAccount', {
+      'isPaymentIntent': isPaymentIntent,
+      'params': params.toJson(),
+      'clientSecret': clientSecret,
+    });
+
+    return ResultParser<PaymentIntent>(parseJson: (json) => PaymentIntent.fromJson(json))
+        .parse(result: result!, successResultKey: 'paymentIntent');
+  }
+
+  @override
+  Future<PaymentIntent> verifyPaymentIntentWithMicrodeposits({
+    required bool isPaymentIntent,
+    required String clientSecret,
+    required VerifyMicroDepositsParams params,
+  }) async {
+    final result = await _methodChannel.invokeMapMethod<String, dynamic>('verifyMicrodeposits', {
+      'isPaymentIntent': isPaymentIntent,
+      'params': params.toJson(),
+      'clientSecret': clientSecret,
+    });
+
+    return ResultParser<PaymentIntent>(parseJson: (json) => PaymentIntent.fromJson(json))
+        .parse(result: result!, successResultKey: 'paymentIntent');
   }
 }
 
@@ -277,9 +353,11 @@ class MethodChannelStripeFactory {
   const MethodChannelStripeFactory();
 
   StripePlatform create() => MethodChannelStripe(
-      methodChannel: const MethodChannel(
-        'flutter.stripe/payments',
-        JSONMethodCodec(),
-      ),
-      platformIsIos: Platform.isIOS);
+        methodChannel: const MethodChannel(
+          'flutter.stripe/payments',
+          JSONMethodCodec(),
+        ),
+        platformIsIos: Platform.isIOS,
+        platformIsAndroid: Platform.isAndroid,
+      );
 }

@@ -11,7 +11,7 @@ internal class CardFormCompleteEvent constructor(viewTag: Int, private val cardD
   }
 
   override fun dispatch(rctEventEmitter: RCTEventEmitter) {
-    rctEventEmitter.receiveEvent(viewTag, getEventName(), serializeEventData())
+    rctEventEmitter.receiveEvent(viewTag, eventName, serializeEventData())
   }
 
   private fun serializeEventData(): WritableMap {
@@ -30,6 +30,7 @@ internal class CardFormCompleteEvent constructor(viewTag: Int, private val cardD
 
     if (dangerouslyGetFullCardDetails) {
       eventData.putString("number", cardDetails["number"]?.toString()?.replace(" ", ""))
+      eventData.putString("cvc", cardDetails["cvc"]?.toString())
     }
 
     return eventData
