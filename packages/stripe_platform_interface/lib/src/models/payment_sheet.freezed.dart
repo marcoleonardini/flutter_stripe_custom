@@ -48,20 +48,9 @@ mixin _$SetupPaymentSheetParameters {
   /// Display name of the merchant
   String? get merchantDisplayName => throw _privateConstructorUsedError;
 
-  /// ISO country code of the country where the merchant is located
-  String? get merchantCountryCode => throw _privateConstructorUsedError;
-
-  /// Three letter ISO currency code
-  ///
-  /// Must be a supported currency code. See https://stripe.com/docs/currencies for supported currencies.
-  ///
-  /// When [setupIntentClientSecret] is not empty it is required to provide a currencyCode.
-  String? get currencyCode => throw _privateConstructorUsedError;
-
   /// Configuration related to Apple Pay
   /// If set, PaymentSheet displays Apple Pay as a payment option
-  /// A merchantCountryCode would then be required
-  bool? get applePay => throw _privateConstructorUsedError;
+  PaymentSheetApplePay? get applePay => throw _privateConstructorUsedError;
 
   /// Style options for colors in PaymentSheet
   ///
@@ -71,8 +60,7 @@ mixin _$SetupPaymentSheetParameters {
 
   /// Configuration related to Google Pay
   /// If set, PaymentSheet displays Google Pay as a payment option
-  /// A merchantCountryCode would then be required
-  bool? get googlePay => throw _privateConstructorUsedError;
+  PaymentSheetGooglePay? get googlePay => throw _privateConstructorUsedError;
 
   /// Flag that allows payment methods that do not move money at the send of the checkout.
   ///
@@ -83,9 +71,6 @@ mixin _$SetupPaymentSheetParameters {
   ///
   /// When no appearance defined it will fallback to [style] or Stripe default.
   PaymentSheetAppearance? get appearance => throw _privateConstructorUsedError;
-
-  /// Flag for using the test environment
-  bool get testEnv => throw _privateConstructorUsedError;
 
   /// Default billing information of the customer.
   ///
@@ -118,17 +103,16 @@ abstract class $SetupPaymentSheetParametersCopyWith<$Res> {
       String? paymentIntentClientSecret,
       String? setupIntentClientSecret,
       String? merchantDisplayName,
-      String? merchantCountryCode,
-      String? currencyCode,
-      bool? applePay,
+      PaymentSheetApplePay? applePay,
       @JsonKey(toJson: UserInterfaceStyleKey.toJson) ThemeMode? style,
-      bool? googlePay,
+      PaymentSheetGooglePay? googlePay,
       bool allowsDelayedPaymentMethods,
       PaymentSheetAppearance? appearance,
-      bool testEnv,
       @JsonKey(name: 'defaultBillingDetails') BillingDetails? billingDetails,
       String? returnURL});
 
+  $PaymentSheetApplePayCopyWith<$Res>? get applePay;
+  $PaymentSheetGooglePayCopyWith<$Res>? get googlePay;
   $PaymentSheetAppearanceCopyWith<$Res>? get appearance;
   $BillingDetailsCopyWith<$Res>? get billingDetails;
 }
@@ -150,14 +134,11 @@ class _$SetupPaymentSheetParametersCopyWithImpl<$Res>
     Object? paymentIntentClientSecret = freezed,
     Object? setupIntentClientSecret = freezed,
     Object? merchantDisplayName = freezed,
-    Object? merchantCountryCode = freezed,
-    Object? currencyCode = freezed,
     Object? applePay = freezed,
     Object? style = freezed,
     Object? googlePay = freezed,
     Object? allowsDelayedPaymentMethods = freezed,
     Object? appearance = freezed,
-    Object? testEnv = freezed,
     Object? billingDetails = freezed,
     Object? returnURL = freezed,
   }) {
@@ -186,18 +167,10 @@ class _$SetupPaymentSheetParametersCopyWithImpl<$Res>
           ? _value.merchantDisplayName
           : merchantDisplayName // ignore: cast_nullable_to_non_nullable
               as String?,
-      merchantCountryCode: merchantCountryCode == freezed
-          ? _value.merchantCountryCode
-          : merchantCountryCode // ignore: cast_nullable_to_non_nullable
-              as String?,
-      currencyCode: currencyCode == freezed
-          ? _value.currencyCode
-          : currencyCode // ignore: cast_nullable_to_non_nullable
-              as String?,
       applePay: applePay == freezed
           ? _value.applePay
           : applePay // ignore: cast_nullable_to_non_nullable
-              as bool?,
+              as PaymentSheetApplePay?,
       style: style == freezed
           ? _value.style
           : style // ignore: cast_nullable_to_non_nullable
@@ -205,7 +178,7 @@ class _$SetupPaymentSheetParametersCopyWithImpl<$Res>
       googlePay: googlePay == freezed
           ? _value.googlePay
           : googlePay // ignore: cast_nullable_to_non_nullable
-              as bool?,
+              as PaymentSheetGooglePay?,
       allowsDelayedPaymentMethods: allowsDelayedPaymentMethods == freezed
           ? _value.allowsDelayedPaymentMethods
           : allowsDelayedPaymentMethods // ignore: cast_nullable_to_non_nullable
@@ -214,10 +187,6 @@ class _$SetupPaymentSheetParametersCopyWithImpl<$Res>
           ? _value.appearance
           : appearance // ignore: cast_nullable_to_non_nullable
               as PaymentSheetAppearance?,
-      testEnv: testEnv == freezed
-          ? _value.testEnv
-          : testEnv // ignore: cast_nullable_to_non_nullable
-              as bool,
       billingDetails: billingDetails == freezed
           ? _value.billingDetails
           : billingDetails // ignore: cast_nullable_to_non_nullable
@@ -227,6 +196,28 @@ class _$SetupPaymentSheetParametersCopyWithImpl<$Res>
           : returnURL // ignore: cast_nullable_to_non_nullable
               as String?,
     ));
+  }
+
+  @override
+  $PaymentSheetApplePayCopyWith<$Res>? get applePay {
+    if (_value.applePay == null) {
+      return null;
+    }
+
+    return $PaymentSheetApplePayCopyWith<$Res>(_value.applePay!, (value) {
+      return _then(_value.copyWith(applePay: value));
+    });
+  }
+
+  @override
+  $PaymentSheetGooglePayCopyWith<$Res>? get googlePay {
+    if (_value.googlePay == null) {
+      return null;
+    }
+
+    return $PaymentSheetGooglePayCopyWith<$Res>(_value.googlePay!, (value) {
+      return _then(_value.copyWith(googlePay: value));
+    });
   }
 
   @override
@@ -266,17 +257,18 @@ abstract class _$$_SetupParametersCopyWith<$Res>
       String? paymentIntentClientSecret,
       String? setupIntentClientSecret,
       String? merchantDisplayName,
-      String? merchantCountryCode,
-      String? currencyCode,
-      bool? applePay,
+      PaymentSheetApplePay? applePay,
       @JsonKey(toJson: UserInterfaceStyleKey.toJson) ThemeMode? style,
-      bool? googlePay,
+      PaymentSheetGooglePay? googlePay,
       bool allowsDelayedPaymentMethods,
       PaymentSheetAppearance? appearance,
-      bool testEnv,
       @JsonKey(name: 'defaultBillingDetails') BillingDetails? billingDetails,
       String? returnURL});
 
+  @override
+  $PaymentSheetApplePayCopyWith<$Res>? get applePay;
+  @override
+  $PaymentSheetGooglePayCopyWith<$Res>? get googlePay;
   @override
   $PaymentSheetAppearanceCopyWith<$Res>? get appearance;
   @override
@@ -302,14 +294,11 @@ class __$$_SetupParametersCopyWithImpl<$Res>
     Object? paymentIntentClientSecret = freezed,
     Object? setupIntentClientSecret = freezed,
     Object? merchantDisplayName = freezed,
-    Object? merchantCountryCode = freezed,
-    Object? currencyCode = freezed,
     Object? applePay = freezed,
     Object? style = freezed,
     Object? googlePay = freezed,
     Object? allowsDelayedPaymentMethods = freezed,
     Object? appearance = freezed,
-    Object? testEnv = freezed,
     Object? billingDetails = freezed,
     Object? returnURL = freezed,
   }) {
@@ -338,18 +327,10 @@ class __$$_SetupParametersCopyWithImpl<$Res>
           ? _value.merchantDisplayName
           : merchantDisplayName // ignore: cast_nullable_to_non_nullable
               as String?,
-      merchantCountryCode: merchantCountryCode == freezed
-          ? _value.merchantCountryCode
-          : merchantCountryCode // ignore: cast_nullable_to_non_nullable
-              as String?,
-      currencyCode: currencyCode == freezed
-          ? _value.currencyCode
-          : currencyCode // ignore: cast_nullable_to_non_nullable
-              as String?,
       applePay: applePay == freezed
           ? _value.applePay
           : applePay // ignore: cast_nullable_to_non_nullable
-              as bool?,
+              as PaymentSheetApplePay?,
       style: style == freezed
           ? _value.style
           : style // ignore: cast_nullable_to_non_nullable
@@ -357,7 +338,7 @@ class __$$_SetupParametersCopyWithImpl<$Res>
       googlePay: googlePay == freezed
           ? _value.googlePay
           : googlePay // ignore: cast_nullable_to_non_nullable
-              as bool?,
+              as PaymentSheetGooglePay?,
       allowsDelayedPaymentMethods: allowsDelayedPaymentMethods == freezed
           ? _value.allowsDelayedPaymentMethods
           : allowsDelayedPaymentMethods // ignore: cast_nullable_to_non_nullable
@@ -366,10 +347,6 @@ class __$$_SetupParametersCopyWithImpl<$Res>
           ? _value.appearance
           : appearance // ignore: cast_nullable_to_non_nullable
               as PaymentSheetAppearance?,
-      testEnv: testEnv == freezed
-          ? _value.testEnv
-          : testEnv // ignore: cast_nullable_to_non_nullable
-              as bool,
       billingDetails: billingDetails == freezed
           ? _value.billingDetails
           : billingDetails // ignore: cast_nullable_to_non_nullable
@@ -393,14 +370,11 @@ class _$_SetupParameters implements _SetupParameters {
       this.paymentIntentClientSecret,
       this.setupIntentClientSecret,
       this.merchantDisplayName,
-      this.merchantCountryCode,
-      this.currencyCode,
       this.applePay,
       @JsonKey(toJson: UserInterfaceStyleKey.toJson) this.style,
       this.googlePay,
       this.allowsDelayedPaymentMethods = false,
       this.appearance,
-      this.testEnv = false,
       @JsonKey(name: 'defaultBillingDetails') this.billingDetails,
       this.returnURL});
 
@@ -441,23 +415,10 @@ class _$_SetupParameters implements _SetupParameters {
   @override
   final String? merchantDisplayName;
 
-  /// ISO country code of the country where the merchant is located
-  @override
-  final String? merchantCountryCode;
-
-  /// Three letter ISO currency code
-  ///
-  /// Must be a supported currency code. See https://stripe.com/docs/currencies for supported currencies.
-  ///
-  /// When [setupIntentClientSecret] is not empty it is required to provide a currencyCode.
-  @override
-  final String? currencyCode;
-
   /// Configuration related to Apple Pay
   /// If set, PaymentSheet displays Apple Pay as a payment option
-  /// A merchantCountryCode would then be required
   @override
-  final bool? applePay;
+  final PaymentSheetApplePay? applePay;
 
   /// Style options for colors in PaymentSheet
   ///
@@ -468,9 +429,8 @@ class _$_SetupParameters implements _SetupParameters {
 
   /// Configuration related to Google Pay
   /// If set, PaymentSheet displays Google Pay as a payment option
-  /// A merchantCountryCode would then be required
   @override
-  final bool? googlePay;
+  final PaymentSheetGooglePay? googlePay;
 
   /// Flag that allows payment methods that do not move money at the send of the checkout.
   ///
@@ -484,11 +444,6 @@ class _$_SetupParameters implements _SetupParameters {
   /// When no appearance defined it will fallback to [style] or Stripe default.
   @override
   final PaymentSheetAppearance? appearance;
-
-  /// Flag for using the test environment
-  @override
-  @JsonKey()
-  final bool testEnv;
 
   /// Default billing information of the customer.
   ///
@@ -506,7 +461,7 @@ class _$_SetupParameters implements _SetupParameters {
 
   @override
   String toString() {
-    return 'SetupPaymentSheetParameters(customFlow: $customFlow, customerId: $customerId, customerEphemeralKeySecret: $customerEphemeralKeySecret, paymentIntentClientSecret: $paymentIntentClientSecret, setupIntentClientSecret: $setupIntentClientSecret, merchantDisplayName: $merchantDisplayName, merchantCountryCode: $merchantCountryCode, currencyCode: $currencyCode, applePay: $applePay, style: $style, googlePay: $googlePay, allowsDelayedPaymentMethods: $allowsDelayedPaymentMethods, appearance: $appearance, testEnv: $testEnv, billingDetails: $billingDetails, returnURL: $returnURL)';
+    return 'SetupPaymentSheetParameters(customFlow: $customFlow, customerId: $customerId, customerEphemeralKeySecret: $customerEphemeralKeySecret, paymentIntentClientSecret: $paymentIntentClientSecret, setupIntentClientSecret: $setupIntentClientSecret, merchantDisplayName: $merchantDisplayName, applePay: $applePay, style: $style, googlePay: $googlePay, allowsDelayedPaymentMethods: $allowsDelayedPaymentMethods, appearance: $appearance, billingDetails: $billingDetails, returnURL: $returnURL)';
   }
 
   @override
@@ -526,10 +481,6 @@ class _$_SetupParameters implements _SetupParameters {
                 other.setupIntentClientSecret, setupIntentClientSecret) &&
             const DeepCollectionEquality()
                 .equals(other.merchantDisplayName, merchantDisplayName) &&
-            const DeepCollectionEquality()
-                .equals(other.merchantCountryCode, merchantCountryCode) &&
-            const DeepCollectionEquality()
-                .equals(other.currencyCode, currencyCode) &&
             const DeepCollectionEquality().equals(other.applePay, applePay) &&
             const DeepCollectionEquality().equals(other.style, style) &&
             const DeepCollectionEquality().equals(other.googlePay, googlePay) &&
@@ -538,7 +489,6 @@ class _$_SetupParameters implements _SetupParameters {
                 allowsDelayedPaymentMethods) &&
             const DeepCollectionEquality()
                 .equals(other.appearance, appearance) &&
-            const DeepCollectionEquality().equals(other.testEnv, testEnv) &&
             const DeepCollectionEquality()
                 .equals(other.billingDetails, billingDetails) &&
             const DeepCollectionEquality().equals(other.returnURL, returnURL));
@@ -554,14 +504,11 @@ class _$_SetupParameters implements _SetupParameters {
       const DeepCollectionEquality().hash(paymentIntentClientSecret),
       const DeepCollectionEquality().hash(setupIntentClientSecret),
       const DeepCollectionEquality().hash(merchantDisplayName),
-      const DeepCollectionEquality().hash(merchantCountryCode),
-      const DeepCollectionEquality().hash(currencyCode),
       const DeepCollectionEquality().hash(applePay),
       const DeepCollectionEquality().hash(style),
       const DeepCollectionEquality().hash(googlePay),
       const DeepCollectionEquality().hash(allowsDelayedPaymentMethods),
       const DeepCollectionEquality().hash(appearance),
-      const DeepCollectionEquality().hash(testEnv),
       const DeepCollectionEquality().hash(billingDetails),
       const DeepCollectionEquality().hash(returnURL));
 
@@ -572,7 +519,9 @@ class _$_SetupParameters implements _SetupParameters {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_SetupParametersToJson(this);
+    return _$$_SetupParametersToJson(
+      this,
+    );
   }
 }
 
@@ -584,15 +533,12 @@ abstract class _SetupParameters implements SetupPaymentSheetParameters {
       final String? paymentIntentClientSecret,
       final String? setupIntentClientSecret,
       final String? merchantDisplayName,
-      final String? merchantCountryCode,
-      final String? currencyCode,
-      final bool? applePay,
+      final PaymentSheetApplePay? applePay,
       @JsonKey(toJson: UserInterfaceStyleKey.toJson)
           final ThemeMode? style,
-      final bool? googlePay,
+      final PaymentSheetGooglePay? googlePay,
       final bool allowsDelayedPaymentMethods,
       final PaymentSheetAppearance? appearance,
-      final bool testEnv,
       @JsonKey(name: 'defaultBillingDetails')
           final BillingDetails? billingDetails,
       final String? returnURL}) = _$_SetupParameters;
@@ -607,79 +553,61 @@ abstract class _SetupParameters implements SetupPaymentSheetParameters {
   /// If this value is true, the payment sheet will allow to select a payment method
   /// and a later confirmation will be needed by calling [confirmPaymentSheetPayment]
   /// By default, false.
-  bool get customFlow => throw _privateConstructorUsedError;
+  bool get customFlow;
   @override
 
   /// The identifier of the Stripe Customer object.
   /// See https://stripe.com/docs/api/customers/object#customer_object-id
-  String? get customerId => throw _privateConstructorUsedError;
+  String? get customerId;
   @override
 
   ///A temp key can be used for API operations that require a secret key.
-  String? get customerEphemeralKeySecret => throw _privateConstructorUsedError;
+  String? get customerEphemeralKeySecret;
   @override
 
   /// Secret used for client-side retrieval using a publishable key.
   ///
   /// If this value is null make sure to add a [setupIntentClientSecret]
-  String? get paymentIntentClientSecret => throw _privateConstructorUsedError;
+  String? get paymentIntentClientSecret;
   @override
 
   /// The client secret of this SetupIntent
   ///
   /// If this value is null make sure to add a [paymentIntentClientSecret]
-  String? get setupIntentClientSecret => throw _privateConstructorUsedError;
+  String? get setupIntentClientSecret;
   @override
 
   /// Display name of the merchant
-  String? get merchantDisplayName => throw _privateConstructorUsedError;
-  @override
-
-  /// ISO country code of the country where the merchant is located
-  String? get merchantCountryCode => throw _privateConstructorUsedError;
-  @override
-
-  /// Three letter ISO currency code
-  ///
-  /// Must be a supported currency code. See https://stripe.com/docs/currencies for supported currencies.
-  ///
-  /// When [setupIntentClientSecret] is not empty it is required to provide a currencyCode.
-  String? get currencyCode => throw _privateConstructorUsedError;
+  String? get merchantDisplayName;
   @override
 
   /// Configuration related to Apple Pay
   /// If set, PaymentSheet displays Apple Pay as a payment option
-  /// A merchantCountryCode would then be required
-  bool? get applePay => throw _privateConstructorUsedError;
+  PaymentSheetApplePay? get applePay;
   @override
 
   /// Style options for colors in PaymentSheet
   ///
   /// Parts can be overridden by [appearance].
   @JsonKey(toJson: UserInterfaceStyleKey.toJson)
-  ThemeMode? get style => throw _privateConstructorUsedError;
+  ThemeMode? get style;
   @override
 
   /// Configuration related to Google Pay
   /// If set, PaymentSheet displays Google Pay as a payment option
-  /// A merchantCountryCode would then be required
-  bool? get googlePay => throw _privateConstructorUsedError;
+  PaymentSheetGooglePay? get googlePay;
   @override
 
   /// Flag that allows payment methods that do not move money at the send of the checkout.
   ///
   /// Defaul value is false.
-  bool get allowsDelayedPaymentMethods => throw _privateConstructorUsedError;
+  bool get allowsDelayedPaymentMethods;
   @override
 
   /// Appearance of the paymentsheet.
   ///
   /// When no appearance defined it will fallback to [style] or Stripe default.
-  PaymentSheetAppearance? get appearance => throw _privateConstructorUsedError;
-  @override
-
-  /// Flag for using the test environment
-  bool get testEnv => throw _privateConstructorUsedError;
+  PaymentSheetAppearance? get appearance;
   @override
 
   /// Default billing information of the customer.
@@ -689,14 +617,401 @@ abstract class _SetupParameters implements SetupPaymentSheetParameters {
   /// alternative localization options. This does not set the billingDetails on the
   /// paymentIntent since the customer can change those.
   @JsonKey(name: 'defaultBillingDetails')
-  BillingDetails? get billingDetails => throw _privateConstructorUsedError;
+  BillingDetails? get billingDetails;
   @override
 
   /// Return URL is required for IDEAL and few other payment methods
-  String? get returnURL => throw _privateConstructorUsedError;
+  String? get returnURL;
   @override
   @JsonKey(ignore: true)
   _$$_SetupParametersCopyWith<_$_SetupParameters> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+PaymentSheetApplePay _$PaymentSheetApplePayFromJson(Map<String, dynamic> json) {
+  return _PaymentSheetApplePay.fromJson(json);
+}
+
+/// @nodoc
+mixin _$PaymentSheetApplePay {
+  ///The two-letter ISO 3166 code of the country of your business, e.g. "US"
+  String get merchantCountryCode => throw _privateConstructorUsedError;
+
+  ///An array of CartSummaryItem item objects that summarize the amount of the payment. If you're using a SetupIntent
+  /// for a recurring payment, you should set this to display the amount you intend to charge.
+  List<ApplePayCartSummaryItem>? get paymentSummaryItems =>
+      throw _privateConstructorUsedError;
+
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  @JsonKey(ignore: true)
+  $PaymentSheetApplePayCopyWith<PaymentSheetApplePay> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $PaymentSheetApplePayCopyWith<$Res> {
+  factory $PaymentSheetApplePayCopyWith(PaymentSheetApplePay value,
+          $Res Function(PaymentSheetApplePay) then) =
+      _$PaymentSheetApplePayCopyWithImpl<$Res>;
+  $Res call(
+      {String merchantCountryCode,
+      List<ApplePayCartSummaryItem>? paymentSummaryItems});
+}
+
+/// @nodoc
+class _$PaymentSheetApplePayCopyWithImpl<$Res>
+    implements $PaymentSheetApplePayCopyWith<$Res> {
+  _$PaymentSheetApplePayCopyWithImpl(this._value, this._then);
+
+  final PaymentSheetApplePay _value;
+  // ignore: unused_field
+  final $Res Function(PaymentSheetApplePay) _then;
+
+  @override
+  $Res call({
+    Object? merchantCountryCode = freezed,
+    Object? paymentSummaryItems = freezed,
+  }) {
+    return _then(_value.copyWith(
+      merchantCountryCode: merchantCountryCode == freezed
+          ? _value.merchantCountryCode
+          : merchantCountryCode // ignore: cast_nullable_to_non_nullable
+              as String,
+      paymentSummaryItems: paymentSummaryItems == freezed
+          ? _value.paymentSummaryItems
+          : paymentSummaryItems // ignore: cast_nullable_to_non_nullable
+              as List<ApplePayCartSummaryItem>?,
+    ));
+  }
+}
+
+/// @nodoc
+abstract class _$$_PaymentSheetApplePayCopyWith<$Res>
+    implements $PaymentSheetApplePayCopyWith<$Res> {
+  factory _$$_PaymentSheetApplePayCopyWith(_$_PaymentSheetApplePay value,
+          $Res Function(_$_PaymentSheetApplePay) then) =
+      __$$_PaymentSheetApplePayCopyWithImpl<$Res>;
+  @override
+  $Res call(
+      {String merchantCountryCode,
+      List<ApplePayCartSummaryItem>? paymentSummaryItems});
+}
+
+/// @nodoc
+class __$$_PaymentSheetApplePayCopyWithImpl<$Res>
+    extends _$PaymentSheetApplePayCopyWithImpl<$Res>
+    implements _$$_PaymentSheetApplePayCopyWith<$Res> {
+  __$$_PaymentSheetApplePayCopyWithImpl(_$_PaymentSheetApplePay _value,
+      $Res Function(_$_PaymentSheetApplePay) _then)
+      : super(_value, (v) => _then(v as _$_PaymentSheetApplePay));
+
+  @override
+  _$_PaymentSheetApplePay get _value => super._value as _$_PaymentSheetApplePay;
+
+  @override
+  $Res call({
+    Object? merchantCountryCode = freezed,
+    Object? paymentSummaryItems = freezed,
+  }) {
+    return _then(_$_PaymentSheetApplePay(
+      merchantCountryCode: merchantCountryCode == freezed
+          ? _value.merchantCountryCode
+          : merchantCountryCode // ignore: cast_nullable_to_non_nullable
+              as String,
+      paymentSummaryItems: paymentSummaryItems == freezed
+          ? _value._paymentSummaryItems
+          : paymentSummaryItems // ignore: cast_nullable_to_non_nullable
+              as List<ApplePayCartSummaryItem>?,
+    ));
+  }
+}
+
+/// @nodoc
+
+@JsonSerializable(explicitToJson: true)
+class _$_PaymentSheetApplePay implements _PaymentSheetApplePay {
+  const _$_PaymentSheetApplePay(
+      {required this.merchantCountryCode,
+      final List<ApplePayCartSummaryItem>? paymentSummaryItems})
+      : _paymentSummaryItems = paymentSummaryItems;
+
+  factory _$_PaymentSheetApplePay.fromJson(Map<String, dynamic> json) =>
+      _$$_PaymentSheetApplePayFromJson(json);
+
+  ///The two-letter ISO 3166 code of the country of your business, e.g. "US"
+  @override
+  final String merchantCountryCode;
+
+  ///An array of CartSummaryItem item objects that summarize the amount of the payment. If you're using a SetupIntent
+  /// for a recurring payment, you should set this to display the amount you intend to charge.
+  final List<ApplePayCartSummaryItem>? _paymentSummaryItems;
+
+  ///An array of CartSummaryItem item objects that summarize the amount of the payment. If you're using a SetupIntent
+  /// for a recurring payment, you should set this to display the amount you intend to charge.
+  @override
+  List<ApplePayCartSummaryItem>? get paymentSummaryItems {
+    final value = _paymentSummaryItems;
+    if (value == null) return null;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  @override
+  String toString() {
+    return 'PaymentSheetApplePay(merchantCountryCode: $merchantCountryCode, paymentSummaryItems: $paymentSummaryItems)';
+  }
+
+  @override
+  bool operator ==(dynamic other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$_PaymentSheetApplePay &&
+            const DeepCollectionEquality()
+                .equals(other.merchantCountryCode, merchantCountryCode) &&
+            const DeepCollectionEquality()
+                .equals(other._paymentSummaryItems, _paymentSummaryItems));
+  }
+
+  @JsonKey(ignore: true)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      const DeepCollectionEquality().hash(merchantCountryCode),
+      const DeepCollectionEquality().hash(_paymentSummaryItems));
+
+  @JsonKey(ignore: true)
+  @override
+  _$$_PaymentSheetApplePayCopyWith<_$_PaymentSheetApplePay> get copyWith =>
+      __$$_PaymentSheetApplePayCopyWithImpl<_$_PaymentSheetApplePay>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$_PaymentSheetApplePayToJson(
+      this,
+    );
+  }
+}
+
+abstract class _PaymentSheetApplePay implements PaymentSheetApplePay {
+  const factory _PaymentSheetApplePay(
+          {required final String merchantCountryCode,
+          final List<ApplePayCartSummaryItem>? paymentSummaryItems}) =
+      _$_PaymentSheetApplePay;
+
+  factory _PaymentSheetApplePay.fromJson(Map<String, dynamic> json) =
+      _$_PaymentSheetApplePay.fromJson;
+
+  @override
+
+  ///The two-letter ISO 3166 code of the country of your business, e.g. "US"
+  String get merchantCountryCode;
+  @override
+
+  ///An array of CartSummaryItem item objects that summarize the amount of the payment. If you're using a SetupIntent
+  /// for a recurring payment, you should set this to display the amount you intend to charge.
+  List<ApplePayCartSummaryItem>? get paymentSummaryItems;
+  @override
+  @JsonKey(ignore: true)
+  _$$_PaymentSheetApplePayCopyWith<_$_PaymentSheetApplePay> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+PaymentSheetGooglePay _$PaymentSheetGooglePayFromJson(
+    Map<String, dynamic> json) {
+  return _PaymentSheetGooglePay.fromJson(json);
+}
+
+/// @nodoc
+mixin _$PaymentSheetGooglePay {
+  ///The two-letter ISO 3166 code of the country of your business, e.g. "US"
+  String get merchantCountryCode => throw _privateConstructorUsedError;
+
+  /// The three-letter ISO 4217 alphabetic currency code, e.g. "USD" or "EUR". Required in order to support Google Pay when processing a Setup Intent.
+  String? get currencyCode => throw _privateConstructorUsedError;
+
+  /// Whether or not to use the google pay test environment.  Set to `true` until you have applied for and been granted access to the Production environment.
+  bool get testEnv => throw _privateConstructorUsedError;
+
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  @JsonKey(ignore: true)
+  $PaymentSheetGooglePayCopyWith<PaymentSheetGooglePay> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $PaymentSheetGooglePayCopyWith<$Res> {
+  factory $PaymentSheetGooglePayCopyWith(PaymentSheetGooglePay value,
+          $Res Function(PaymentSheetGooglePay) then) =
+      _$PaymentSheetGooglePayCopyWithImpl<$Res>;
+  $Res call({String merchantCountryCode, String? currencyCode, bool testEnv});
+}
+
+/// @nodoc
+class _$PaymentSheetGooglePayCopyWithImpl<$Res>
+    implements $PaymentSheetGooglePayCopyWith<$Res> {
+  _$PaymentSheetGooglePayCopyWithImpl(this._value, this._then);
+
+  final PaymentSheetGooglePay _value;
+  // ignore: unused_field
+  final $Res Function(PaymentSheetGooglePay) _then;
+
+  @override
+  $Res call({
+    Object? merchantCountryCode = freezed,
+    Object? currencyCode = freezed,
+    Object? testEnv = freezed,
+  }) {
+    return _then(_value.copyWith(
+      merchantCountryCode: merchantCountryCode == freezed
+          ? _value.merchantCountryCode
+          : merchantCountryCode // ignore: cast_nullable_to_non_nullable
+              as String,
+      currencyCode: currencyCode == freezed
+          ? _value.currencyCode
+          : currencyCode // ignore: cast_nullable_to_non_nullable
+              as String?,
+      testEnv: testEnv == freezed
+          ? _value.testEnv
+          : testEnv // ignore: cast_nullable_to_non_nullable
+              as bool,
+    ));
+  }
+}
+
+/// @nodoc
+abstract class _$$_PaymentSheetGooglePayCopyWith<$Res>
+    implements $PaymentSheetGooglePayCopyWith<$Res> {
+  factory _$$_PaymentSheetGooglePayCopyWith(_$_PaymentSheetGooglePay value,
+          $Res Function(_$_PaymentSheetGooglePay) then) =
+      __$$_PaymentSheetGooglePayCopyWithImpl<$Res>;
+  @override
+  $Res call({String merchantCountryCode, String? currencyCode, bool testEnv});
+}
+
+/// @nodoc
+class __$$_PaymentSheetGooglePayCopyWithImpl<$Res>
+    extends _$PaymentSheetGooglePayCopyWithImpl<$Res>
+    implements _$$_PaymentSheetGooglePayCopyWith<$Res> {
+  __$$_PaymentSheetGooglePayCopyWithImpl(_$_PaymentSheetGooglePay _value,
+      $Res Function(_$_PaymentSheetGooglePay) _then)
+      : super(_value, (v) => _then(v as _$_PaymentSheetGooglePay));
+
+  @override
+  _$_PaymentSheetGooglePay get _value =>
+      super._value as _$_PaymentSheetGooglePay;
+
+  @override
+  $Res call({
+    Object? merchantCountryCode = freezed,
+    Object? currencyCode = freezed,
+    Object? testEnv = freezed,
+  }) {
+    return _then(_$_PaymentSheetGooglePay(
+      merchantCountryCode: merchantCountryCode == freezed
+          ? _value.merchantCountryCode
+          : merchantCountryCode // ignore: cast_nullable_to_non_nullable
+              as String,
+      currencyCode: currencyCode == freezed
+          ? _value.currencyCode
+          : currencyCode // ignore: cast_nullable_to_non_nullable
+              as String?,
+      testEnv: testEnv == freezed
+          ? _value.testEnv
+          : testEnv // ignore: cast_nullable_to_non_nullable
+              as bool,
+    ));
+  }
+}
+
+/// @nodoc
+
+@JsonSerializable(explicitToJson: true)
+class _$_PaymentSheetGooglePay implements _PaymentSheetGooglePay {
+  const _$_PaymentSheetGooglePay(
+      {required this.merchantCountryCode,
+      this.currencyCode,
+      this.testEnv = false});
+
+  factory _$_PaymentSheetGooglePay.fromJson(Map<String, dynamic> json) =>
+      _$$_PaymentSheetGooglePayFromJson(json);
+
+  ///The two-letter ISO 3166 code of the country of your business, e.g. "US"
+  @override
+  final String merchantCountryCode;
+
+  /// The three-letter ISO 4217 alphabetic currency code, e.g. "USD" or "EUR". Required in order to support Google Pay when processing a Setup Intent.
+  @override
+  final String? currencyCode;
+
+  /// Whether or not to use the google pay test environment.  Set to `true` until you have applied for and been granted access to the Production environment.
+  @override
+  @JsonKey()
+  final bool testEnv;
+
+  @override
+  String toString() {
+    return 'PaymentSheetGooglePay(merchantCountryCode: $merchantCountryCode, currencyCode: $currencyCode, testEnv: $testEnv)';
+  }
+
+  @override
+  bool operator ==(dynamic other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$_PaymentSheetGooglePay &&
+            const DeepCollectionEquality()
+                .equals(other.merchantCountryCode, merchantCountryCode) &&
+            const DeepCollectionEquality()
+                .equals(other.currencyCode, currencyCode) &&
+            const DeepCollectionEquality().equals(other.testEnv, testEnv));
+  }
+
+  @JsonKey(ignore: true)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      const DeepCollectionEquality().hash(merchantCountryCode),
+      const DeepCollectionEquality().hash(currencyCode),
+      const DeepCollectionEquality().hash(testEnv));
+
+  @JsonKey(ignore: true)
+  @override
+  _$$_PaymentSheetGooglePayCopyWith<_$_PaymentSheetGooglePay> get copyWith =>
+      __$$_PaymentSheetGooglePayCopyWithImpl<_$_PaymentSheetGooglePay>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$_PaymentSheetGooglePayToJson(
+      this,
+    );
+  }
+}
+
+abstract class _PaymentSheetGooglePay implements PaymentSheetGooglePay {
+  const factory _PaymentSheetGooglePay(
+      {required final String merchantCountryCode,
+      final String? currencyCode,
+      final bool testEnv}) = _$_PaymentSheetGooglePay;
+
+  factory _PaymentSheetGooglePay.fromJson(Map<String, dynamic> json) =
+      _$_PaymentSheetGooglePay.fromJson;
+
+  @override
+
+  ///The two-letter ISO 3166 code of the country of your business, e.g. "US"
+  String get merchantCountryCode;
+  @override
+
+  /// The three-letter ISO 4217 alphabetic currency code, e.g. "USD" or "EUR". Required in order to support Google Pay when processing a Setup Intent.
+  String? get currencyCode;
+  @override
+
+  /// Whether or not to use the google pay test environment.  Set to `true` until you have applied for and been granted access to the Production environment.
+  bool get testEnv;
+  @override
+  @JsonKey(ignore: true)
+  _$$_PaymentSheetGooglePayCopyWith<_$_PaymentSheetGooglePay> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -914,7 +1229,9 @@ class _$_PaymentSheetAppearance implements _PaymentSheetAppearance {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_PaymentSheetAppearanceToJson(this);
+    return _$$_PaymentSheetAppearanceToJson(
+      this,
+    );
   }
 }
 
@@ -931,17 +1248,15 @@ abstract class _PaymentSheetAppearance implements PaymentSheetAppearance {
   @override
 
   /// Color parameters
-  PaymentSheetAppearanceColors? get colors =>
-      throw _privateConstructorUsedError;
+  PaymentSheetAppearanceColors? get colors;
   @override
 
   /// Shapes parameters
-  PaymentSheetShape? get shapes => throw _privateConstructorUsedError;
+  PaymentSheetShape? get shapes;
   @override
 
   /// PaymentSheet appearance
-  PaymentSheetPrimaryButtonAppearance? get primaryButton =>
-      throw _privateConstructorUsedError;
+  PaymentSheetPrimaryButtonAppearance? get primaryButton;
   @override
   @JsonKey(ignore: true)
   _$$_PaymentSheetAppearanceCopyWith<_$_PaymentSheetAppearance> get copyWith =>
@@ -1365,7 +1680,9 @@ class _$_PaymentSheetAppearanceColors implements _PaymentSheetAppearanceColors {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_PaymentSheetAppearanceColorsToJson(this);
+    return _$$_PaymentSheetAppearanceColorsToJson(
+      this,
+    );
   }
 }
 
@@ -1404,59 +1721,59 @@ abstract class _PaymentSheetAppearanceColors
   ///
   /// Make sure there is enough contrast with [background].
   @JsonKey(toJson: ColorKey.toJson, fromJson: ColorKey.fromJson)
-  Color? get primary => throw _privateConstructorUsedError;
+  Color? get primary;
   @override
 
   /// Background color of the payment sheet.
   ///
   /// Make sure there is enough contrast with [primary].
   @JsonKey(toJson: ColorKey.toJson, fromJson: ColorKey.fromJson)
-  Color? get background => throw _privateConstructorUsedError;
+  Color? get background;
   @override
 
   /// Background color of the payment sheet components.
   @JsonKey(toJson: ColorKey.toJson, fromJson: ColorKey.fromJson)
-  Color? get componentBackground => throw _privateConstructorUsedError;
+  Color? get componentBackground;
   @override
 
   ///  Border color of the payment sheet components.
   @JsonKey(toJson: ColorKey.toJson, fromJson: ColorKey.fromJson)
-  Color? get componentBorder => throw _privateConstructorUsedError;
+  Color? get componentBorder;
   @override
 
   ///  Divider color of the payment sheet components.
   @JsonKey(toJson: ColorKey.toJson, fromJson: ColorKey.fromJson)
-  Color? get componentDivider => throw _privateConstructorUsedError;
+  Color? get componentDivider;
   @override
 
   /// Color of the entered text in the payment components.
   @JsonKey(toJson: ColorKey.toJson, fromJson: ColorKey.fromJson)
-  Color? get componentText => throw _privateConstructorUsedError;
+  Color? get componentText;
   @override
 
   /// Primary text color.
   @JsonKey(toJson: ColorKey.toJson, fromJson: ColorKey.fromJson)
-  Color? get primaryText => throw _privateConstructorUsedError;
+  Color? get primaryText;
   @override
 
   /// Secondary text color.
   @JsonKey(toJson: ColorKey.toJson, fromJson: ColorKey.fromJson)
-  Color? get secondaryText => throw _privateConstructorUsedError;
+  Color? get secondaryText;
   @override
 
   /// Place holder text color.
   @JsonKey(toJson: ColorKey.toJson, fromJson: ColorKey.fromJson)
-  Color? get placeholderText => throw _privateConstructorUsedError;
+  Color? get placeholderText;
   @override
 
   /// Color of the displayed icons
   @JsonKey(toJson: ColorKey.toJson, fromJson: ColorKey.fromJson)
-  Color? get icon => throw _privateConstructorUsedError;
+  Color? get icon;
   @override
 
   /// Color of the warning and error messages.
   @JsonKey(toJson: ColorKey.toJson, fromJson: ColorKey.fromJson)
-  Color? get error => throw _privateConstructorUsedError;
+  Color? get error;
   @override
   @JsonKey(ignore: true)
   _$$_PaymentSheetAppearanceColorsCopyWith<_$_PaymentSheetAppearanceColors>
@@ -1645,7 +1962,9 @@ class _$_PaymentSheetShape implements _PaymentSheetShape {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_PaymentSheetShapeToJson(this);
+    return _$$_PaymentSheetShapeToJson(
+      this,
+    );
   }
 }
 
@@ -1661,15 +1980,15 @@ abstract class _PaymentSheetShape implements PaymentSheetShape {
   @override
 
   /// Borderradius for the paymentsheet corners
-  double? get borderRadius => throw _privateConstructorUsedError;
+  double? get borderRadius;
   @override
 
   /// Borderwidth for the paymentsheet components
-  double? get borderWidth => throw _privateConstructorUsedError;
+  double? get borderWidth;
   @override
 
   /// Appearance config of the payment sheet shadow
-  PaymentSheetShadowParams? get shadow => throw _privateConstructorUsedError;
+  PaymentSheetShadowParams? get shadow;
   @override
   @JsonKey(ignore: true)
   _$$_PaymentSheetShapeCopyWith<_$_PaymentSheetShape> get copyWith =>
@@ -1866,7 +2185,9 @@ class _$_PaymentSheetShadowParams implements _PaymentSheetShadowParams {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_PaymentSheetShadowParamsToJson(this);
+    return _$$_PaymentSheetShadowParamsToJson(
+      this,
+    );
   }
 }
 
@@ -1884,15 +2205,15 @@ abstract class _PaymentSheetShadowParams implements PaymentSheetShadowParams {
 
   /// Shadow color
   @JsonKey(toJson: ColorKey.toJson, fromJson: ColorKey.fromJson)
-  Color? get color => throw _privateConstructorUsedError;
+  Color? get color;
   @override
 
   /// Shadow opacity
-  double? get opacity => throw _privateConstructorUsedError;
+  double? get opacity;
   @override
 
   /// Shadow offset
-  PaymentSheetShadowOffset? get offset => throw _privateConstructorUsedError;
+  PaymentSheetShadowOffset? get offset;
   @override
   @JsonKey(ignore: true)
   _$$_PaymentSheetShadowParamsCopyWith<_$_PaymentSheetShadowParams>
@@ -2040,7 +2361,9 @@ class _$_PaymentSheetShadowOffset implements _PaymentSheetShadowOffset {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_PaymentSheetShadowOffsetToJson(this);
+    return _$$_PaymentSheetShadowOffsetToJson(
+      this,
+    );
   }
 }
 
@@ -2054,11 +2377,11 @@ abstract class _PaymentSheetShadowOffset implements PaymentSheetShadowOffset {
   @override
 
   /// X value
-  double? get x => throw _privateConstructorUsedError;
+  double? get x;
   @override
 
   /// Y value
-  double? get y => throw _privateConstructorUsedError;
+  double? get y;
   @override
   @JsonKey(ignore: true)
   _$$_PaymentSheetShadowOffsetCopyWith<_$_PaymentSheetShadowOffset>
@@ -2251,7 +2574,9 @@ class _$_PaymentSheetPrimaryButtonAppearance
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_PaymentSheetPrimaryButtonAppearanceToJson(this);
+    return _$$_PaymentSheetPrimaryButtonAppearanceToJson(
+      this,
+    );
   }
 }
 
@@ -2269,13 +2594,11 @@ abstract class _PaymentSheetPrimaryButtonAppearance
   @override
 
   /// color theme of the primary button
-  PaymentSheetPrimaryButtonTheme? get colors =>
-      throw _privateConstructorUsedError;
+  PaymentSheetPrimaryButtonTheme? get colors;
   @override
 
   /// Shape params of the primary button
-  PaymentSheetPrimaryButtonShape? get shapes =>
-      throw _privateConstructorUsedError;
+  PaymentSheetPrimaryButtonShape? get shapes;
   @override
   @JsonKey(ignore: true)
   _$$_PaymentSheetPrimaryButtonAppearanceCopyWith<
@@ -2472,7 +2795,9 @@ class _$_PaymentSheetPrimaryButtonShape
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_PaymentSheetPrimaryButtonShapeToJson(this);
+    return _$$_PaymentSheetPrimaryButtonShapeToJson(
+      this,
+    );
   }
 }
 
@@ -2489,15 +2814,15 @@ abstract class _PaymentSheetPrimaryButtonShape
   @override
 
   /// Configuration of the primary button's shadow.
-  PaymentSheetShadowParams? get shadow => throw _privateConstructorUsedError;
+  PaymentSheetShadowParams? get shadow;
   @override
 
   /// the blur radius of the button
-  double? get blurRadius => throw _privateConstructorUsedError;
+  double? get blurRadius;
   @override
 
   /// border width of the primary button on the payment sheet
-  double? get borderWidth => throw _privateConstructorUsedError;
+  double? get borderWidth;
   @override
   @JsonKey(ignore: true)
   _$$_PaymentSheetPrimaryButtonShapeCopyWith<_$_PaymentSheetPrimaryButtonShape>
@@ -2687,7 +3012,9 @@ class _$_PaymentSheetPrimaryButtonTheme
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_PaymentSheetPrimaryButtonThemeToJson(this);
+    return _$$_PaymentSheetPrimaryButtonThemeToJson(
+      this,
+    );
   }
 }
 
@@ -2704,13 +3031,11 @@ abstract class _PaymentSheetPrimaryButtonTheme
   @override
 
   /// Colors when displaying button in dark theme
-  PaymentSheetPrimaryButtonThemeColors? get dark =>
-      throw _privateConstructorUsedError;
+  PaymentSheetPrimaryButtonThemeColors? get dark;
   @override
 
   /// Colors when displaying button in light theme
-  PaymentSheetPrimaryButtonThemeColors? get light =>
-      throw _privateConstructorUsedError;
+  PaymentSheetPrimaryButtonThemeColors? get light;
   @override
   @JsonKey(ignore: true)
   _$$_PaymentSheetPrimaryButtonThemeCopyWith<_$_PaymentSheetPrimaryButtonTheme>
@@ -2908,7 +3233,9 @@ class _$_PaymentSheetPrimaryButtonThemeColors
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_PaymentSheetPrimaryButtonThemeColorsToJson(this);
+    return _$$_PaymentSheetPrimaryButtonThemeColorsToJson(
+      this,
+    );
   }
 }
 
@@ -2930,17 +3257,17 @@ abstract class _PaymentSheetPrimaryButtonThemeColors
 
   /// Primary button background color
   @JsonKey(toJson: ColorKey.toJson, fromJson: ColorKey.fromJson)
-  Color? get background => throw _privateConstructorUsedError;
+  Color? get background;
   @override
 
   /// Primary button text color
   @JsonKey(toJson: ColorKey.toJson, fromJson: ColorKey.fromJson)
-  Color? get text => throw _privateConstructorUsedError;
+  Color? get text;
   @override
 
   /// Primary button border color
   @JsonKey(toJson: ColorKey.toJson, fromJson: ColorKey.fromJson)
-  Color? get border => throw _privateConstructorUsedError;
+  Color? get border;
   @override
   @JsonKey(ignore: true)
   _$$_PaymentSheetPrimaryButtonThemeColorsCopyWith<
@@ -3103,7 +3430,9 @@ class _$_PresentParameters implements _PresentParameters {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_PresentParametersToJson(this);
+    return _$$_PresentParametersToJson(
+      this,
+    );
   }
 }
 
@@ -3118,7 +3447,7 @@ abstract class _PresentParameters implements PresentPaymentSheetParameters {
   @override
 
   /// Key used for client-side retrieval using a publishable key.
-  String get clientSecret => throw _privateConstructorUsedError;
+  String get clientSecret;
   @override
 
   /// Flag that determines whether or not to present payment options or
@@ -3128,7 +3457,7 @@ abstract class _PresentParameters implements PresentPaymentSheetParameters {
   /// is set to `true` when initializing the payment sheet.
   /// If value is set to `true` [SetupPaymentSheetParameters.customFlow]
   /// has to be set to `false` when initializing the payment sheet.
-  bool get confirmPayment => throw _privateConstructorUsedError;
+  bool get confirmPayment;
   @override
   @JsonKey(ignore: true)
   _$$_PresentParametersCopyWith<_$_PresentParameters> get copyWith =>

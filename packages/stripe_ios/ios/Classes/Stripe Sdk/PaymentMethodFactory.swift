@@ -53,6 +53,8 @@ class PaymentMethodFactory {
                 return try createUSBankAccountPaymentMethodParams()
             case STPPaymentMethodType.payPal:
                 return try createPayPalPaymentMethodParams()
+            case STPPaymentMethodType.affirm:
+                return try createAffirmPaymentMethodParams()
 //            case STPPaymentMethodType.weChatPay:
 //                return try createWeChatPayPaymentMethodParams()
             default:
@@ -101,6 +103,8 @@ class PaymentMethodFactory {
             case STPPaymentMethodType.USBankAccount:
                 return try createUSBankAccountPaymentMethodOptions()
             case STPPaymentMethodType.payPal:
+                return nil
+            case STPPaymentMethodType.affirm:
                 return nil
             default:
                 throw PaymentMethodError.paymentNotSupported
@@ -158,11 +162,7 @@ class PaymentMethodFactory {
             return STPPaymentMethodParams(card: methodParams, billingDetails: billingDetailsParams, metadata: nil)
         }
 
-        guard let cardParams = cardFieldView?.cardParams ?? cardFormView?.cardParams else {
-            throw PaymentMethodError.cardPaymentMissingParams
-        }
-
-        if cardFieldView?.cardParams != nil {
+        if let params = cardFieldView?.cardParams as? STPPaymentMethodParams {
             if let postalCode = cardFieldView?.cardPostalCode{
                 if (billingDetailsParams == nil) {
                     let bd = STPPaymentMethodBillingDetails()
@@ -173,8 +173,10 @@ class PaymentMethodFactory {
                     billingDetailsParams?.address?.postalCode = postalCode
                 }
             }
+            params.billingDetails = billingDetailsParams
+            return params
         }
-        if cardFormView?.cardParams != nil {
+        if let params = cardFormView?.cardParams as? STPPaymentMethodCardParams {
             if let address = cardFormView?.cardForm?.cardParams?.billingDetails?.address {
                 if (billingDetailsParams == nil) {
                     let bd = STPPaymentMethodBillingDetails()
@@ -187,9 +189,10 @@ class PaymentMethodFactory {
                     billingDetailsParams?.address?.country = address.country
                 }
             }
+            return STPPaymentMethodParams(card: params, billingDetails: billingDetailsParams, metadata: nil)
         }
 
-        return STPPaymentMethodParams(card: cardParams, billingDetails: billingDetailsParams, metadata: nil)
+        throw PaymentMethodError.cardPaymentMissingParams
     }
 
 
@@ -360,6 +363,11 @@ class PaymentMethodFactory {
     
     private func createPayPalPaymentMethodParams() throws -> STPPaymentMethodParams {
         return STPPaymentMethodParams(payPal: STPPaymentMethodPayPalParams(), billingDetails: billingDetailsParams, metadata: nil)
+    }
+    
+    private func createAffirmPaymentMethodParams() throws -> STPPaymentMethodParams {
+        let params = STPPaymentMethodAffirmParams()
+        return STPPaymentMethodParams(affirm: params, metadata: nil)
     }
 }
 

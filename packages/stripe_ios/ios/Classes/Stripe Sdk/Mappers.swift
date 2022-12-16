@@ -1,4 +1,5 @@
 import Stripe
+import StripePaymentSheet
 
 class Mappers {
     class func createResult(_ key: String, _ value: NSDictionary?) -> NSDictionary {
@@ -14,17 +15,6 @@ class Mappers {
         case "postalAddress": return PKContactField.postalAddress
         default: return PKContactField.name
         }
-    }
-
-    class func mapToPaymentSummaryItemType(type: String?) -> PKPaymentSummaryItemType {
-        if let type = type {
-            switch type {
-            case "pending": return PKPaymentSummaryItemType.pending
-            case "final": return PKPaymentSummaryItemType.final
-            default: return PKPaymentSummaryItemType.final
-            }
-        }
-        return PKPaymentSummaryItemType.final
     }
 
     class func mapFromBankAccountHolderType(_ type: STPBankAccountHolderType?) -> String? {
@@ -61,18 +51,21 @@ class Mappers {
     }
 
     class func mapFromBankAccount(_ bankAccount: STPBankAccount?) -> NSDictionary? {
-        if (bankAccount == nil) {
+        guard let bankAccount = bankAccount else {
             return nil
         }
+
         let result: NSDictionary = [
-            "id": bankAccount?.stripeID ?? NSNull(),
-            "bankName": bankAccount?.bankName ?? NSNull(),
-            "accountHolderName": bankAccount?.accountHolderName ?? NSNull(),
-            "accountHolderType": mapFromBankAccountHolderType(bankAccount?.accountHolderType) ?? NSNull(),
-            "country": bankAccount?.country ?? NSNull(),
-            "currency": bankAccount?.currency ?? NSNull(),
-            "routingNumber": bankAccount?.routingNumber ?? NSNull(),
-            "status": mapFromBankAccountStatus(bankAccount?.status) ?? NSNull(),
+            "id": bankAccount.stripeID,
+            "bankName": bankAccount.bankName ?? NSNull(),
+            "accountHolderName": bankAccount.accountHolderName ?? NSNull(),
+            "accountHolderType": mapFromBankAccountHolderType(bankAccount.accountHolderType) ?? NSNull(),
+            "country": bankAccount.country ?? NSNull(),
+            "currency": bankAccount.currency ?? NSNull(),
+            "routingNumber": bankAccount.routingNumber ?? NSNull(),
+            "status": mapFromBankAccountStatus(bankAccount.status) ?? NSNull(),
+            "fingerprint": bankAccount.fingerprint ?? NSNull(),
+            "last4": bankAccount.last4 ?? NSNull()
         ]
         return result
     }
@@ -157,7 +150,6 @@ class Mappers {
             "card": mapFromCard(token.card) ?? NSNull(),
             "livemode": token.livemode,
             "type": mapFromTokenType(token.type) ?? NSNull(),
-
         ]
 
         return tokenMap
@@ -172,8 +164,12 @@ class Mappers {
                 let amount = NSDecimalNumber(string: method["amount"] as? String ?? "")
                 let identifier = method["identifier"] as! String
                 let detail = method["detail"] as? String ?? ""
-                let type = Mappers.mapToPaymentSummaryItemType(type: method["type"] as? String)
-                let pm = PKShippingMethod.init(label: label, amount: amount, type: type)
+                let pm = PKShippingMethod.init(
+                    label: label,
+                    amount: amount,
+                    type: method["isPending"] as? Bool ?? false
+                        ? PKPaymentSummaryItemType.pending : PKPaymentSummaryItemType.final
+                )
                 pm.identifier = identifier
                 pm.detail = detail
                 shippingMethodsList.append(pm)
@@ -284,6 +280,7 @@ class Mappers {
         case STPPaymentMethodType.klarna: return "Klarna"
         case STPPaymentMethodType.USBankAccount: return "USBankAccount"
         case STPPaymentMethodType.payPal: return "PayPal"
+        case STPPaymentMethodType.affirm: return "Affirm"
         case STPPaymentMethodType.unknown: return "Unknown"
         default: return "Unknown"
         }
@@ -313,6 +310,7 @@ class Mappers {
             case "WeChatPay": return STPPaymentMethodType.weChatPay
             case "USBankAccount": return STPPaymentMethodType.USBankAccount
             case "PayPal": return STPPaymentMethodType.payPal
+            case "Affirm": return STPPaymentMethodType.affirm
             default: return STPPaymentMethodType.unknown
             }
         }
@@ -498,7 +496,7 @@ class Mappers {
         billing.name = RCTConvert.nsString(billingDetails["name"])
 
         let address = STPPaymentMethodAddress()
-        
+
         if let addressMap = billingDetails["address"] as? NSDictionary {
             address.city = RCTConvert.nsString(addressMap["city"])
             address.postalCode = RCTConvert.nsString(addressMap["postalCode"])
@@ -507,7 +505,7 @@ class Mappers {
             address.line2 = RCTConvert.nsString(addressMap["line2"])
             address.state = RCTConvert.nsString(addressMap["state"])
         }
-        
+
         billing.address = address
 
         return billing
@@ -517,7 +515,7 @@ class Mappers {
         guard let shippingDetails = shippingDetails else {
             return nil
         }
-        
+
         let shippingAddress = STPPaymentIntentShippingDetailsAddressParams(line1: "")
 
         if let addressMap = shippingDetails["address"] as? NSDictionary {
@@ -528,7 +526,7 @@ class Mappers {
             shippingAddress.line2 = addressMap["line2"] as? String
             shippingAddress.state = addressMap["state"] as? String
         }
-        
+
         let shipping = STPPaymentIntentShippingDetailsParams(address: shippingAddress, name: shippingDetails["name"] as? String ?? "")
 
         return shipping
@@ -568,7 +566,7 @@ class Mappers {
         }
         return nil
     }
-    
+
     class func mapToCardBrand(_ brand: String?) -> STPCardBrand {
         if let brand = brand {
             switch brand {
@@ -597,8 +595,11 @@ class Mappers {
             "expMonth": paymentMethod.card?.expMonth ?? NSNull(),
             "fingerprint": paymentMethod.card?.fingerprint ?? NSNull(),
             "funding": paymentMethod.card?.funding ?? NSNull(),
-            "last4": paymentMethod.card?.last4 ?? NSNull()
+            "last4": paymentMethod.card?.last4 ?? NSNull(),
+            "preferredNetwork": paymentMethod.card?.networks?.preferred ?? NSNull(),
+            "availableNetworks": paymentMethod.card?.networks?.available ?? NSNull(),
         ]
+        
         let sepaDebit: NSDictionary = [
             "bankCode": paymentMethod.sepaDebit?.bankCode ?? NSNull(),
             "country": paymentMethod.sepaDebit?.country ?? NSNull(),
@@ -722,7 +723,7 @@ class Mappers {
         if let lastSetupError = setupIntent.lastSetupError {
             let setupError: NSMutableDictionary = [
                 "code": lastSetupError.code ?? NSNull(),
-                "message": lastSetupError.description,
+                "message": lastSetupError.message ?? NSNull(),
                 "type": mapFromSetupIntentLastPaymentErrorType(lastSetupError.type) ?? NSNull(),
                 "declineCode": lastSetupError.declineCode ?? NSNull(),
                 "paymentMethod": mapFromPaymentMethod(lastSetupError.paymentMethod) ?? NSNull()
@@ -744,6 +745,10 @@ class Mappers {
 
     class func mapToReturnURL(urlScheme: String) -> String {
         return urlScheme + "://safepay"
+    }
+
+    class func mapToFinancialConnectionsReturnURL(urlScheme: String) -> String {
+        return urlScheme + "://financial_connections_redirect"
     }
 
     class func mapUICustomization(_ params: NSDictionary) -> STPThreeDSUICustomization {
@@ -962,7 +967,7 @@ class Mappers {
         }
         return "Unknown"
     }
-    
+
     class func mapToUSBankAccountHolderType(type: String?) -> STPPaymentMethodUSBankAccountHolderType {
         switch type {
             case "Company": return STPPaymentMethodUSBankAccountHolderType.company
@@ -981,7 +986,7 @@ class Mappers {
         }
         return "Unknown"
     }
-    
+
     class func mapToUSBankAccountType(type: String?) -> STPPaymentMethodUSBankAccountType {
         switch type {
             case "Savings": return STPPaymentMethodUSBankAccountType.savings

@@ -167,14 +167,15 @@ class __$$_AddressCopyWithImpl<$Res> extends _$AddressCopyWithImpl<$Res>
 /// @nodoc
 
 @JsonSerializable(explicitToJson: true)
-class _$_Address implements _Address {
+class _$_Address extends _Address {
   const _$_Address(
       {required this.city,
       required this.country,
       required this.line1,
       required this.line2,
       required this.postalCode,
-      required this.state});
+      required this.state})
+      : super._();
 
   factory _$_Address.fromJson(Map<String, dynamic> json) =>
       _$$_AddressFromJson(json);
@@ -240,11 +241,13 @@ class _$_Address implements _Address {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_AddressToJson(this);
+    return _$$_AddressToJson(
+      this,
+    );
   }
 }
 
-abstract class _Address implements Address {
+abstract class _Address extends Address {
   const factory _Address(
       {required final String? city,
       required final String? country,
@@ -252,33 +255,34 @@ abstract class _Address implements Address {
       required final String? line2,
       required final String? postalCode,
       required final String? state}) = _$_Address;
+  const _Address._() : super._();
 
   factory _Address.fromJson(Map<String, dynamic> json) = _$_Address.fromJson;
 
   @override
 
   /// City, town or district.
-  String? get city => throw _privateConstructorUsedError;
+  String? get city;
   @override
 
   /// Country
-  String? get country => throw _privateConstructorUsedError;
+  String? get country;
   @override
 
   /// Address line1 (e.g. Street, C/O , PO Box).
-  String? get line1 => throw _privateConstructorUsedError;
+  String? get line1;
   @override
 
   /// Address line2 (e.g. building, appartment or unit).
-  String? get line2 => throw _privateConstructorUsedError;
+  String? get line2;
   @override
 
   /// ZIP or postal code.
-  String? get postalCode => throw _privateConstructorUsedError;
+  String? get postalCode;
   @override
 
   /// State or province.
-  String? get state => throw _privateConstructorUsedError;
+  String? get state;
   @override
   @JsonKey(ignore: true)
   _$$_AddressCopyWith<_$_Address> get copyWith =>

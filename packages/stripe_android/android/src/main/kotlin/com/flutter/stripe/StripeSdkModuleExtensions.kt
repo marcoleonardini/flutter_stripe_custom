@@ -3,8 +3,7 @@ package com.flutter.stripe
 import androidx.fragment.app.FragmentActivity
 import com.facebook.react.bridge.Promise
 import com.reactnativestripesdk.StripeSdkModule
-import com.reactnativestripesdk.createMissingActivityError
-
+import com.reactnativestripesdk.utils.createMissingActivityError
 
 
 operator fun Int.invoke(): Int {
@@ -16,7 +15,7 @@ operator fun Int.invoke(): Int {
  * provided will be resolved with an error message instructing the user to retry the method.
  */
 fun StripeSdkModule.getCurrentActivityOrResolveWithError(promise: Promise?): FragmentActivity? {
-    (currentActivity as? FragmentActivity)?.let {
+    currentActivity?.let {
         return it
     }
     promise?.resolve(createMissingActivityError())

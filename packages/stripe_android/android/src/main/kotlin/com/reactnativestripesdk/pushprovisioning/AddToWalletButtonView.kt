@@ -17,8 +17,7 @@ import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.UIManagerModule
 import com.facebook.react.uimanager.events.EventDispatcher
-import com.reactnativestripesdk.PushProvisioningProxy
-import com.reactnativestripesdk.createError
+import com.reactnativestripesdk.utils.createError
 
 
 class AddToWalletButtonView(private val context: ThemedReactContext, private val requestManager: RequestManager) : AppCompatImageView(context) {
@@ -74,10 +73,9 @@ class AddToWalletButtonView(private val context: ThemedReactContext, private val
       loadedSource = null
     } else if (sourceToLoad != loadedSource || (heightOverride > 0 || widthOverride > 0)) {
       loadedSource = sourceToLoad
-      val scale = sourceMap?.getDouble("scale") ?: 1.0
+      val scale = sourceMap?.getDouble("scale")?.toDouble() ?: 1.0
 
       requestManager
-        .asDrawable()
         .load(sourceToLoad)
         .addListener(object : RequestListener<Drawable> {
           override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {

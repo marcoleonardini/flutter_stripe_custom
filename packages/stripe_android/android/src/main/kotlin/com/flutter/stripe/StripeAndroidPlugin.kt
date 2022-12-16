@@ -5,6 +5,7 @@ import androidx.annotation.NonNull
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableMap
+import com.facebook.react.uimanager.DisplayMetricsHolder
 import com.facebook.react.uimanager.ThemedReactContext
 import com.google.android.material.internal.ThemeEnforcement
 import com.reactnativestripesdk.*
@@ -49,6 +50,8 @@ class StripeAndroidPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     }
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+        DisplayMetricsHolder.initDisplayMetricsIfNotInitialized(flutterPluginBinding.applicationContext)
+
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "flutter.stripe/payments", JSONMethodCodec.INSTANCE)
         channel.setMethodCallHandler(this)
         flutterPluginBinding
@@ -92,14 +95,14 @@ If you continue to have trouble, follow this discussion to get some support http
                     options = call.requiredArgument("options"),
                     promise = Promise(result)
             )
-             "createPaymentMethodWithCardData" -> stripeSdk.createPaymentMethodWithCardData(
+            "createTokenForCVCUpdate" -> stripeSdk.createTokenForCVCUpdate(
+                    cvc = call.requiredArgument("cvc"),
+                    promise = Promise(result)
+            )
+            "createPaymentMethodWithCardData" -> stripeSdk.createPaymentMethodWithCardData(
                     data = call.requiredArgument("data"),
                     cardData = call.requiredArgument("cardData"),
                     options = call.requiredArgument("options"),
-                    promise = Promise(result)
-            )
-            "createTokenForCVCUpdate" -> stripeSdk.createTokenForCVCUpdate(
-                    cvc = call.requiredArgument("cvc"),
                     promise = Promise(result)
             )
             "confirmSetupIntent" -> stripeSdk.confirmSetupIntent(
@@ -173,6 +176,21 @@ If you continue to have trouble, follow this discussion to get some support http
             )
             "isCardInWallet" -> stripeSdk.isCardInWallet(
                 params = call.requiredArgument("params"),
+                promise = Promise(result)
+            )
+            "canAddCardToWallet" -> stripeSdk.canAddCardToWallet(
+                params = call.requiredArgument("params"),
+                promise = Promise(result)
+            )
+            "collectBankAccountToken" -> stripeSdk.collectBankAccountToken(
+                clientSecret = call.requiredArgument("clientSecret"),
+                promise = Promise(result)
+            )
+            "collectFinancialConnectionsAccounts" -> stripeSdk.collectFinancialConnectionsAccounts(
+                clientSecret = call.requiredArgument("clientSecret"),
+                promise = Promise(result)
+            )
+            "resetPaymentSheetCustomer" -> stripeSdk.resetPaymentSheetCustomer(
                 promise = Promise(result)
             )
             else -> result.notImplemented()

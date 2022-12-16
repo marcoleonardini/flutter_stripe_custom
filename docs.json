@@ -5,7 +5,9 @@
     "sidebar": [
         ["Overview", "/"],
         ["Accept a Payment", [
-          ["Payment Sheet", "/sheet"]
+          ["Payment Sheet", "/sheet"],
+          ["CardField", "/card_field"],
+          ["CardFormField", "/card_field"]
           ]      
         ],
         ["Regional payments", [
@@ -13,6 +15,7 @@
             ["Ideal", "/ideal"]
           ]
         ],
+        ["Financial connections", "/financial_connections" ],
         ["Troubleshooting", "/troubleshooting"],
         ["Api Reference", "https://pub.dev/documentation/flutter_stripe/latest/flutter_stripe/flutter_stripe-library.html"]
       ]

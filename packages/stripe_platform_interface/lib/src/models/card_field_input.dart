@@ -15,7 +15,7 @@ class CardStyle with _$CardStyle {
   @JsonSerializable(explicitToJson: true)
   factory CardStyle({
     /// Width for the border.
-    double? borderWidth,
+    int? borderWidth,
     @JsonKey(toJson: ColorKey.toJson, fromJson: ColorKey.fromJson)
 
         /// Background color of the cardfield
@@ -28,7 +28,7 @@ class CardStyle with _$CardStyle {
         Color? borderColor,
 
     /// Borderradius that can give the Cardfield rounded corners.
-    double? borderRadius,
+    int? borderRadius,
     @JsonKey(toJson: ColorKey.toJson, fromJson: ColorKey.fromJson)
 
         /// Cursor color when the card has focus.
@@ -39,7 +39,7 @@ class CardStyle with _$CardStyle {
         Color? textColor,
 
     /// Font size.
-    double? fontSize,
+    int? fontSize,
 
     /// Font family
     String? fontFamily,
@@ -86,14 +86,14 @@ class CardFormStyle with _$CardFormStyle {
         Color? backgroundColor,
 
     /// Width for the border.
-    double? borderWidth,
+    int? borderWidth,
     @JsonKey(toJson: ColorKey.toJson, fromJson: ColorKey.fromJson)
 
         /// Border color of the cardfield.
         Color? borderColor,
 
     /// Borderradius that can give the Cardfield rounded corners.
-    double? borderRadius,
+    int? borderRadius,
     @JsonKey(toJson: ColorKey.toJson, fromJson: ColorKey.fromJson)
 
         /// Cursor color when the card has focus.
@@ -104,7 +104,7 @@ class CardFormStyle with _$CardFormStyle {
         Color? textColor,
 
     /// Font size.
-    double? fontSize,
+    int? fontSize,
 
     /// Color of the input in case incorrect data is entered.
     @JsonKey(toJson: ColorKey.toJson, fromJson: ColorKey.fromJson)

@@ -35,6 +35,14 @@ class CreateTokenParams with _$CreateTokenParams {
     required BankAccountTokenParams params,
   }) = _CreateTokenParamsBankAccount;
 
+  /// Creates a single-use token that represents the details of personally identifiable information (PII).
+  ///
+  /// See https://stripe.com/docs/api/tokens/create_pii
+  @JsonSerializable(explicitToJson: true)
+  const factory CreateTokenParams.pii({
+    required PIITokenParams params,
+  }) = _CreateTokenParamsPII;
+
   factory CreateTokenParams.fromJson(Map<String, dynamic> json) =>
       _$CreateTokenParamsFromJson(json);
 }
@@ -59,6 +67,22 @@ class CardTokenParams with _$CardTokenParams {
 
   factory CardTokenParams.fromJson(Map<String, dynamic> json) =>
       _$CardTokenParamsFromJson(json);
+}
+
+@freezed
+
+/// Parameters that are used to create a token for a personally identifiable information (PII).
+class PIITokenParams with _$PIITokenParams {
+  const factory PIITokenParams({
+    /// Type of token.
+    @Default(TokenType.Pii) TokenType type,
+
+    /// The user's personal ID number
+    required String personalId,
+  }) = _PIITokenParams;
+
+  factory PIITokenParams.fromJson(Map<String, dynamic> json) =>
+      _$PIITokenParamsFromJson(json);
 }
 
 @freezed
@@ -166,11 +190,11 @@ class CardData with _$CardData {
 /// Bank account data related to the token
 class BankAccount with _$BankAccount {
   const factory BankAccount({
-    /// Entity that is holder of the account.
-    required BankAccountHolderType accountHolderType,
+    /// Unique id for this bank account
+    required String id,
 
-    /// Status of the bank account.
-    required BankAccountStatus status,
+    /// Entity that is holder of the account.
+    BankAccountHolderType? accountHolderType,
 
     /// Name of the bank where the account is registered.
     String? bankName,
@@ -186,6 +210,17 @@ class BankAccount with _$BankAccount {
 
     /// The routing number of the bank account (e.g. needer for US accounts).
     String? routingNumber,
+
+    /// Status of the bank account.
+    BankAccountStatus? status,
+
+    /// Uniquely identifies the particular bank account.
+    ///
+    /// You can use this to check whether or not two bank accounts are the same.
+    String? fingerprint,
+
+    /// Last four numbers of the bank account number
+    String? last4,
   }) = _BankAccount;
 
   factory BankAccount.fromJson(Map<String, dynamic> json) =>
@@ -226,4 +261,4 @@ enum BankAccountStatus {
 }
 
 /// Type of token
-enum TokenType { Card, BankAccount }
+enum TokenType { Card, BankAccount, Pii }
